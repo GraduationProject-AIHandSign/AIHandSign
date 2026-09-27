@@ -11,6 +11,25 @@
 | 백엔드 | FastAPI (Python 3.11), SQLAlchemy, WebSocket 실시간 추론 |
 | 인프라 | GCP Cloud Storage · Cloud SQL (MySQL 8.4) · Cloud Run |
 
+## 데모
+
+<p align="center"><img src="docs/images/demo_recognition.gif" width="640" alt="실시간 수어 인식 데모"></p>
+<p align="center">웹캠 → MediaPipe 키포인트 추출 → WebSocket → Transformer 실시간 인식 (얼굴은 모자이크 처리)</p>
+
+## 서비스 화면
+
+| 메인 대시보드 | 교육 (하루 5단어 커리큘럼) |
+|---|---|
+| <img src="docs/images/dashboard.jpg" alt="메인 대시보드"> | <img src="docs/images/education.jpg" alt="교육 페이지"> |
+| **수어 인식** | **퀴즈 · 뱃지** |
+| <img src="docs/images/recognition.jpg" alt="수어 인식"> | <img src="docs/images/quiz_badge.jpg" alt="퀴즈와 뱃지"> |
+| **사전 (3,000단어 · 카테고리)** | **Gemini 챗봇 코칭** |
+| <img src="docs/images/dictionary.jpg" alt="사전"> | <img src="docs/images/chatbot.jpg" alt="챗봇"> |
+
+## 시스템 아키텍처
+
+<img src="docs/images/architecture.png" alt="시스템 아키텍처">
+
 ---
 
 ## 폴더 구조
@@ -36,6 +55,7 @@ AIHandSign/
 │   ├── model_v3_DFU.ipynb               D·F·U 3각도 → 75.6%
 │   └── model_v4_final.ipynb             80/10/10 분할 + batch 32 → 91.3% (최종)
 │
+├── docs/images/                   # README용 화면 캡처 · 데모 GIF
 ├── models/                        # 학습된 모델 가중치와 정규화 값
 ├── processed/                     # 라벨(y), label_map, 전처리 오류 기록
 └── backend/                       # FastAPI 서버
@@ -65,6 +85,10 @@ v4 모델 ─▶ backend/app/routers/predict.py ─▶ WebSocket /ws/predict
 | v3 | D·F·U 9,000 | 70/15/15 | 18,900 | 64 | 75.6% | 89.2% |
 | **v4** | **D·F·U 9,000** | **80/10/10** | **21,600** | **32** | **91.3%** | **96.4%** |
 
+<img src="docs/images/training_curve_v4.png" alt="v4 학습 곡선">
+
+v4 학습 곡선 — 95 epoch에서 조기 종료, 85 epoch 가중치 사용
+
 - 증강: 가우시안 노이즈(σ 0.01), 크기 ×0.9~1.1, 위치 이동 ±0.05. 학습셋에만 적용
 - v2 실패 원인: AI-Hub 3D 좌표는 5개 각도가 같은 값으로 복원돼 있어 클래스 내 분산이 0
 - `X_train_DFU_v2` (시연자 3명, 27,000개)는 만들어 두었으며 다음 학습·검증에 사용할 예정
@@ -76,6 +100,12 @@ v4 모델 ─▶ backend/app/routers/predict.py ─▶ WebSocket /ws/predict
 - [processed 폴더 (X_train 관련)](https://drive.google.com/drive/folders/1R7o9EVTy6dqAAMu3QXdilu7wDVA520al?usp=sharing)
   - `X_train.npy` (15000, 30, 274) · `X_train_DFU.npy` (9000, 30, 274)
   - `X_train_DFU_v2.npy` (27000, 30, 274) · `X_train_3d.npy` (15000, 30, 411)
+
+## API 문서
+
+FastAPI가 자동 생성하는 Swagger UI(`/docs`)에서 21개 API를 확인·테스트할 수 있습니다.
+
+<img src="docs/images/swagger.jpg" width="720" alt="Swagger UI">
 
 ## 백엔드 실행
 
