@@ -1,0 +1,2229 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>교육 | AI 수어 학습 플랫폼</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    /* ═══════════════════════════════════════════════
+       디자인 토큰 — 홈페이지(파스텔 대시보드) 톤 일치
+       ═══════════════════════════════════════════════ */
+    :root {
+      /* 배경 / 서피스 */
+      --bg:           #f3eee5;
+      --sidebar-bg:   #e6e3f1;
+      --card-white:   #ffffff;
+
+      /* 파스텔 카드 색상 */
+      --card-mint:    #c9e6d4;
+      --card-peach:   #fad6c0;
+      --card-yellow:  #fdedb0;
+      --card-lavender:#d9d1ee;
+      --card-pink:    #fcd4d8;
+      --card-coral:   #f4b8a3;
+      --card-cream:   #f5ecd9;
+
+      /* 텍스트 */
+      --text-dark:    #1a1814;
+      --text-mid:     #5a5048;
+      --text-muted:   #8a8278;
+      --text-on-soft: rgba(40,30,20,0.65);
+      --text:         #1a1814;     /* 호환용 */
+
+      /* 액션 */
+      --primary:      #1a1814;
+      --primary-dark: #000000;
+      --accent:       #6a5cd6;
+      --dark:         #1a1814;     /* 호환용 */
+
+      /* 테두리·그림자 */
+      --border:       #e8e1d4;
+      --shadow-sm:    0 2px 8px rgba(50,40,20,0.04);
+      --shadow-md:    0 4px 14px rgba(50,40,20,0.07);
+      --shadow-card:  0 2px 8px rgba(50,40,20,0.04);
+      --shadow-hover: 0 8px 24px rgba(50,40,20,0.10);
+
+      /* 반지름 */
+      --r-sm: 10px;
+      --r-md: 14px;
+      --r-lg: 18px;
+      --r-xl: 24px;
+      --radius-lg: 18px;     /* 호환용 */
+      --radius-xl: 24px;     /* 호환용 */
+
+      /* 트랜지션 */
+      --transition: all 0.22s cubic-bezier(0.34, 1.42, 0.64, 1);
+      --transition-plain: all 0.18s ease;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text-dark);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* 기존 블러 오브 제거 (홈 톤과 통일) */
+    .background-blur, .blur { display: none; }
+
+    /* ═══════════ 앱 셸 (sidebar + main) — 홈 톤 일치 ═══════════ */
+    .app-shell {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 24px;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 28px 40px 60px;
+      align-items: start;
+    }
+
+    /* 좌측 사이드바 — 홈과 동일 컴포넌트 */
+    .sidebar {
+      background: var(--sidebar-bg);
+      border-radius: var(--r-lg);
+      padding: 22px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      position: sticky;
+      top: 28px;
+      height: calc(100vh - 56px);
+    }
+
+    .brand-block {
+      display: flex; align-items: center; gap: 10px;
+      padding: 0 4px;
+      text-decoration: none;
+    }
+    .brand-mark {
+      width: 38px; height: 38px;
+      background: var(--text-dark);
+      border-radius: 11px;
+      display: flex; align-items: center; justify-content: center;
+      color: white;
+      flex-shrink: 0;
+    }
+    .brand-name {
+      font-size: 17px; font-weight: 900; letter-spacing: -0.02em;
+      color: var(--text-dark); line-height: 1.1;
+    }
+    .brand-sub {
+      font-size: 11px; color: var(--text-muted); font-weight: 500;
+      margin-top: 2px;
+    }
+
+    .user-block {
+      background: white;
+      border-radius: var(--r-md);
+      padding: 12px 14px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .user-avatar {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, #fad6c0, #f4a892);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: white; flex-shrink: 0;
+    }
+    .user-greeting-line {
+      font-size: 11px; color: var(--text-muted);
+      font-weight: 600; line-height: 1.2;
+    }
+    .user-name-line {
+      font-size: 14px; font-weight: 800;
+      color: var(--text-dark); letter-spacing: -0.01em;
+      line-height: 1.3;
+    }
+
+    .side-nav {
+      display: flex; flex-direction: column; gap: 1px;
+      margin-top: 2px;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 11px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 13px; font-weight: 600;
+      color: var(--text-mid);
+      text-decoration: none;
+      transition: var(--transition-plain);
+    }
+    .nav-item:hover {
+      background: rgba(255,255,255,0.55);
+      color: var(--text-dark);
+    }
+    .nav-item.active {
+      background: var(--text-dark);
+      color: white;
+      font-weight: 700;
+    }
+    .nav-item svg { flex-shrink: 0; }
+
+    /* 사이드바 하단 등급 카드 */
+    .promo-card {
+      background: linear-gradient(135deg, #fad6c0, #f4b8a3);
+      border-radius: var(--r-md);
+      padding: 16px 16px 14px;
+      margin-top: auto;
+      position: relative;
+      overflow: hidden;
+      text-decoration: none;
+      color: var(--text-dark);
+      display: block;
+    }
+    .promo-card::before {
+      content: '';
+      position: absolute;
+      right: -20px; bottom: -20px;
+      width: 100px; height: 100px;
+      background-image: radial-gradient(circle, rgba(255,255,255,0.35) 1.2px, transparent 1.2px);
+      background-size: 12px 12px;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .promo-label {
+      font-size: 10px; font-weight: 800;
+      color: rgba(40,30,20,0.55);
+      letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    .promo-rank {
+      font-size: 15px; font-weight: 900; color: var(--text-dark);
+      margin-top: 4px; letter-spacing: -0.02em;
+      position: relative; z-index: 1;
+    }
+    .promo-progress-track {
+      height: 6px;
+      background: rgba(255,255,255,0.45);
+      border-radius: 99px;
+      overflow: hidden;
+      margin-top: 10px;
+      position: relative; z-index: 1;
+    }
+    .promo-progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 99px;
+      transition: width 0.6s ease;
+      width: 0%;
+    }
+    .promo-progress-next {
+      font-size: 10px; font-weight: 700;
+      color: rgba(40,30,20,0.6);
+      margin-top: 5px;
+      position: relative; z-index: 1;
+    }
+    .promo-cta {
+      margin-top: 10px;
+      font-size: 11px; font-weight: 700; color: var(--text-dark);
+      position: relative; z-index: 1;
+    }
+
+    /* 메인 영역 */
+    .main-area {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    /* ═══════════ 히어로 ═══════════ */
+    .hero {
+      background: var(--card-mint);
+      border: none;
+      border-radius: var(--r-xl);
+      box-shadow: none;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      padding: 32px 32px 28px;
+      margin-bottom: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      right: -40px; bottom: -40px;
+      width: 200px; height: 200px;
+      background-image: radial-gradient(circle, rgba(255,255,255,0.45) 1.4px, transparent 1.4px);
+      background-size: 14px 14px;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.7);
+      color: var(--text-dark);
+      border-radius: 100px;
+      padding: 6px 14px;
+      font-size: 12px; font-weight: 800;
+      margin-bottom: 14px;
+      letter-spacing: 0.02em;
+      border: none;
+    }
+    h1 {
+      font-size: 36px;
+      line-height: 1.15;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      max-width: 900px;
+      color: var(--text-dark);
+      position: relative; z-index: 1;
+    }
+    .hero p.desc {
+      margin-top: 10px;
+      max-width: 720px;
+      color: var(--text-on-soft);
+      line-height: 1.7;
+      font-size: 14px;
+      font-weight: 500;
+      position: relative; z-index: 1;
+    }
+
+    /* 스탯 카드 — 홈의 card-num 패턴 (가로형: 아이콘+라벨 / 값) */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 22px;
+      position: relative; z-index: 1;
+    }
+    .stat-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      transition: var(--transition-plain);
+    }
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
+      border-color: transparent;
+    }
+    .stat-left {
+      display: flex; align-items: center; gap: 10px;
+      min-width: 0;
+    }
+    .stat-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      background: var(--card-cream);
+      color: var(--text-dark);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      font-size: 16px;
+    }
+    .stat-label {
+      color: var(--text-dark);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: none;
+      line-height: 1.3;
+    }
+    .stat-value {
+      font-size: 16px; font-weight: 800;
+      color: var(--text-mid);
+      letter-spacing: -0.01em;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    /* ═══════════ 검색 / 점프 컨트롤 ═══════════ */
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 220px;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .search-box, .jump-box {
+      background: white;
+      border: none;
+      border-radius: var(--r-md);
+      padding: 12px 16px;
+      box-shadow: var(--shadow-card);
+    }
+    .search-box label, .jump-box label {
+      display: block;
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 800;
+      margin-bottom: 6px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .search-box input, .jump-box input {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      padding: 9px 12px;
+      font-size: 14px; outline: none;
+      font-family: inherit;
+      background: var(--bg);
+      color: var(--text-dark);
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .search-box input:focus, .jump-box input:focus {
+      border-color: var(--text-dark);
+      background: white;
+      box-shadow: none;
+    }
+
+    /* ═══════════ 그룹 카드 (1~10일차 등) ═══════════ */
+    .groups { display: grid; gap: 12px; }
+    .group-card {
+      background: white;
+      border: none;
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow-card);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      overflow: hidden;
+      transition: var(--transition-plain);
+    }
+    .group-card:hover { box-shadow: var(--shadow-hover); }
+    .group-header {
+      width: 100%;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      padding: 18px 22px;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px;
+      text-align: left;
+      transition: background 0.15s;
+      font-family: inherit;
+    }
+    .group-header:hover { background: var(--bg); }
+    .group-left h2 {
+      font-size: 18px; line-height: 1.3;
+      font-weight: 900;
+      color: var(--text-dark);
+      letter-spacing: -0.02em;
+    }
+    .group-left p {
+      margin-top: 4px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      font-size: 12px; font-weight: 500;
+    }
+    .group-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .group-count {
+      min-width: 60px; height: 32px;
+      border-radius: 100px;
+      background: var(--card-cream);
+      color: var(--text-dark);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 12px;
+      border: none;
+      padding: 0 10px;
+    }
+    .group-arrow {
+      width: 32px; height: 32px;
+      border-radius: 10px;
+      background: var(--bg);
+      border: none;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      color: var(--text-mid);
+      transition: transform 0.25s ease, background 0.2s;
+    }
+    .group-card.open .group-arrow {
+      transform: rotate(180deg);
+      background: var(--text-dark);
+      color: white;
+      border-color: var(--text-dark);
+    }
+    .group-body { display: none; padding: 0 22px 22px; }
+    .group-card.open .group-body { display: block; }
+
+    /* ═══════════ 일차 버튼 그리드 ═══════════ */
+    .day-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .day-button {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      border-radius: var(--r-md);
+      padding: 14px;
+      cursor: pointer;
+      text-align: left;
+      transition: box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+      font-family: inherit;
+      color: var(--text-dark);
+    }
+    .day-button:hover {
+      box-shadow: 0 6px 20px rgba(50,40,20,0.12);
+      border-color: var(--text-dark);
+    }
+    .day-button.active {
+      background: var(--text-dark);
+      color: white;
+      border-color: var(--text-dark);
+      box-shadow: none;
+    }
+    .day-button .mini {
+      font-size: 10px;
+      opacity: 0.7;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .day-button .title {
+      margin-top: 4px;
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: -0.01em;
+    }
+    .day-button .meta {
+      margin-top: 4px;
+      font-size: 11px;
+      color: inherit;
+      opacity: 0.65;
+      line-height: 1.5;
+      font-weight: 500;
+    }
+
+    /* ═══════════ 레슨 패널 ═══════════ */
+    .lesson-panel {
+      margin-top: 14px;
+      background: var(--card-cream);
+      border: none;
+      border-radius: var(--r-lg);
+      padding: 22px 22px 24px;
+      display: none;
+    }
+    .lesson-panel.show { display: block; }
+    .lesson-top {
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 12px; flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .lesson-title {
+      font-size: 22px; font-weight: 900;
+      letter-spacing: -0.02em;
+      color: var(--text-dark);
+    }
+    .lesson-sub {
+      color: var(--text-mid);
+      line-height: 1.6;
+      margin-top: 4px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    /* ═══════════ 단어 그리드 (아바타 카드) ═══════════ */
+    .word-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .word-card {
+      background: white;
+      border: none;
+      border-radius: var(--r-md);
+      overflow: hidden;
+      display: flex; flex-direction: column;
+      transition: var(--transition-plain);
+      box-shadow: var(--shadow-card);
+    }
+    .word-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-hover);
+      border-color: transparent;
+    }
+
+    /* 아바타 캔버스 — 다크 톤 유지 (아바타 가독성) */
+    .avatar-stage { position: relative; width: 100%; aspect-ratio: 1 / 1; background: #06080e; overflow: hidden; }
+    .avatar-stage canvas { display: block; width: 100% !important; height: 100% !important; }
+    .avatar-loading { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: rgba(255,255,255,0.5); font-size: 11px; font-family: monospace; }
+    .av-spinner { width: 26px; height: 26px; border: 2px solid rgba(255,255,255,0.1); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* 재생 컨트롤 */
+    .avatar-controls { position: absolute; bottom: 0; left: 0; right: 0; padding: 6px 8px 8px; background: linear-gradient(to top, rgba(6,8,14,0.88), transparent); display: flex; align-items: center; gap: 6px; }
+    .av-btn {
+      width: 26px; height: 26px;
+      border-radius: 8px; border: none;
+      background: rgba(255,255,255,0.18);
+      color: white;
+      font-size: 10px; cursor: pointer;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: 0.15s;
+    }
+    .av-btn:hover { background: rgba(255,255,255,0.32); }
+    .av-btn.is-playing { background: var(--accent); color: #fff; }
+    .av-progress { flex: 1; height: 3px; background: rgba(255,255,255,0.18); border-radius: 99px; overflow: hidden; cursor: pointer; }
+    .av-progress-bar { height: 100%; background: var(--accent); width: 0%; }
+    .av-frame { font-size: 9px; color: rgba(255,255,255,0.6); font-family: monospace; flex-shrink: 0; min-width: 34px; text-align: right; }
+
+    /* 단어 정보 */
+    .word-info { padding: 12px 14px 14px; flex: 1; }
+    .word-label-line { display: flex; align-items: baseline; gap: 6px; }
+    .word-num-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 800;
+      white-space: nowrap;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .word-name {
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--text-dark);
+      letter-spacing: -0.02em;
+      min-height: 24px;
+    }
+    .word-name.skeleton {
+      color: #e8e1d4;
+      background: #e8e1d4;
+      border-radius: 6px;
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+    .word-frames {
+      margin-top: 4px;
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: monospace;
+    }
+
+    /* 11일차 이후 플레이스홀더 (호환 유지) */
+    .word-card-plain {
+      background: white;
+      border: none;
+      border-radius: var(--r-md);
+      padding: 16px;
+      box-shadow: var(--shadow-card);
+    }
+    .word-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .word-value {
+      margin-top: 6px;
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--text-dark);
+    }
+    .word-desc {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* ═══════════ 단어 학습 전체화면 오버레이 ═══════════
+       다크 톤 유지(아바타 가독성) + 컨트롤은 보라 액센트 */
+    .word-viewer { display: none; position: fixed; inset: 0; z-index: 200; background: #0e1020; flex-direction: column; }
+    .word-viewer.open { display: flex; }
+
+    /* 상단 헤더 */
+    .wv-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .wv-back {
+      display: flex; align-items: center; gap: 6px;
+      background: white;
+      border: 1px solid var(--border);
+      color: var(--text-mid);
+      border-radius: 100px;
+      padding: 8px 14px;
+      cursor: pointer;
+      font-size: 13px; font-weight: 700;
+      font-family: inherit;
+      transition: 0.15s;
+    }
+    .wv-back:hover { background: var(--bg); color: var(--text-dark); border-color: var(--text-dark); }
+    .wv-title {
+      font-size: 14px; font-weight: 800;
+      color: var(--text-dark);
+      letter-spacing: -0.01em;
+    }
+    .wv-progress-info {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: monospace;
+    }
+
+    /* 진행 도트 */
+    .wv-dots { display: flex; gap: 6px; justify-content: center; padding: 12px 0 8px; flex-shrink: 0; }
+    .wv-dot {
+      width: 28px; height: 4px;
+      border-radius: 99px;
+      background: rgba(255,255,255,0.1);
+      transition: 0.25s;
+      cursor: pointer;
+    }
+    .wv-dot.done { background: rgba(26,24,20,0.28); }
+    .wv-dot.active { background: var(--text-dark); }
+
+    /* 캔버스 */
+    .wv-stage { flex: 1; position: relative; overflow: hidden; min-height: 0; }
+    .wv-stage canvas { display: block; width: 100% !important; height: 100% !important; }
+    .wv-loading { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: rgba(255,255,255,0.5); font-size: 13px; font-family: monospace; }
+    .wv-spinner { width: 36px; height: 36px; border: 2px solid rgba(255,255,255,0.12); border-top-color: rgba(255,255,255,0.75); border-radius: 50%; animation: spin 0.8s linear infinite; }
+
+    /* 재생 컨트롤 */
+    .wv-controls {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 10px 16px 14px;
+      background: linear-gradient(to top, rgba(14,16,32,0.92), transparent);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .wv-av-btn {
+      width: 34px; height: 34px;
+      border-radius: 10px; border: none;
+      background: rgba(255,255,255,0.12);
+      color: white;
+      font-size: 13px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: 0.15s;
+    }
+    .wv-av-btn:hover { background: rgba(255,255,255,0.22); }
+    .wv-av-btn.is-playing { background: var(--text-dark); color: #fff; }
+    .wv-av-progress { flex: 1; height: 4px; background: rgba(255,255,255,0.1); border-radius: 99px; overflow: hidden; }
+    .wv-av-bar { height: 100%; background: rgba(255,255,255,0.8); width: 0%; }
+    .wv-av-frame { font-size: 10px; color: rgba(255,255,255,0.55); font-family: monospace; min-width: 40px; text-align: right; }
+
+    /* 속도 버튼 */
+    .wv-speed-wrap {
+      display: flex; align-items: center; gap: 8px;
+      flex-shrink: 0;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 4px 10px;
+    }
+    .wv-speed-label { font-size: 10px; color: rgba(255,255,255,0.5); font-family: monospace; white-space: nowrap; }
+    .wv-speed-btns { display: flex; gap: 4px; }
+    .wv-spd-btn {
+      padding: 4px 9px;
+      border-radius: 7px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: transparent;
+      color: rgba(255,255,255,0.55);
+      font-size: 10px; font-weight: 700;
+      cursor: pointer; transition: 0.15s;
+      white-space: nowrap;
+      font-family: inherit;
+    }
+    .wv-spd-btn:hover { border-color: rgba(255,255,255,0.4); color: white; }
+    .wv-spd-btn.active { background: var(--text-dark); border-color: var(--text-dark); color: #fff; }
+    .wv-shortcut-hint {
+      font-size: 10px;
+      color: rgba(255,255,255,0.35);
+      font-family: monospace;
+      white-space: nowrap; flex-shrink: 0;
+      letter-spacing: 0.3px;
+    }
+
+    /* 하단 푸터 */
+    .wv-footer {
+      flex-shrink: 0;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      border-top: 1px solid var(--border);
+      padding: 18px 24px 20px;
+      display: flex; flex-direction: column; gap: 14px;
+    }
+    .wv-footer-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+    .wv-word-info { flex: 1; min-width: 0; }
+    .wv-word-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      font-family: inherit;
+    }
+    .wv-word-name {
+      font-size: 30px; font-weight: 900;
+      color: var(--text-dark);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+    .wv-word-name.skeleton { color: var(--border); background: var(--border); border-radius: 8px; width: 120px; animation: pulse 1.2s ease-in-out infinite; }
+    .wv-word-frames { font-size: 11px; color: var(--text-muted); font-family: monospace; margin-top: 4px; }
+
+    .wv-nav { display: flex; gap: 8px; flex-shrink: 0; align-items: center; }
+    .wv-nav-btn {
+      display: flex; align-items: center; gap: 5px;
+      padding: 11px 18px;
+      border-radius: 100px;
+      border: none;
+      font-size: 13px; font-weight: 800;
+      cursor: pointer; transition: 0.15s;
+      font-family: inherit;
+    }
+    .wv-nav-btn.prev {
+      background: white;
+      color: var(--text-mid);
+      border: 1px solid var(--border);
+    }
+    .wv-nav-btn.prev:hover { background: var(--bg); color: var(--text-dark); border-color: var(--text-dark); }
+    .wv-nav-btn.next { background: var(--text-dark); color: white; border: none; }
+    .wv-nav-btn.next:hover { opacity: 0.88; }
+    .wv-nav-btn:disabled { opacity: 0.3; cursor: default; }
+    .wv-nav-btn.finish { background: var(--card-mint); color: var(--text-dark); }
+
+    /* 단어 설명 영역 */
+    .wv-desc-wrap { display: grid; grid-template-columns: 1fr; gap: 10px; }
+    .wv-desc-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+    }
+    .wv-desc-title {
+      font-size: 11px;
+      font-weight: 800;
+      font-family: monospace;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 7px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .wv-desc-title.meaning { color: var(--text-mid); }
+    .wv-desc-title.how { color: var(--text-mid); }
+    .wv-desc-text { font-size: 13px; color: var(--text-mid); line-height: 1.7; }
+    .wv-desc-text.skeleton { color: transparent; background: var(--border); border-radius: 6px; height: 52px; animation: pulse 1.2s ease-in-out infinite; }
+
+    @media (max-width: 640px) { .wv-desc-wrap { grid-template-columns: 1fr; } .wv-word-name { font-size: 24px; } .wv-nav-btn { padding: 9px 14px; font-size: 12px; } .wv-footer { padding: 14px 16px 18px; } }
+
+    /* 반응형 — 홈과 동일 ─ 1280/1080/760 단계 */
+    @media (max-width: 1280px) {
+      .app-shell { grid-template-columns: 230px 1fr; padding: 24px 28px 50px; }
+    }
+    @media (max-width: 1100px) {
+      .day-grid, .word-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .stats { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 1080px) {
+      .app-shell { grid-template-columns: 220px 1fr; padding: 20px 24px 50px; }
+    }
+    @media (max-width: 760px) {
+      .app-shell { grid-template-columns: 1fr; padding: 16px 16px 40px; gap: 16px; }
+      .sidebar { position: relative; top: 0; height: auto; }
+      h1 { font-size: 28px; }
+      .controls { grid-template-columns: 1fr; }
+      .day-grid, .word-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 520px) {
+      .hero { padding: 24px 20px; border-radius: var(--r-lg); }
+      .day-grid, .word-grid { grid-template-columns: 1fr; }
+      .lesson-title { font-size: 20px; }
+      .group-header, .group-body { padding-left: 18px; padding-right: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="background-blur">
+    <div class="blur one"></div>
+    <div class="blur two"></div>
+    <div class="blur three"></div>
+  </div>
+  <div class="app-shell">
+
+    <!-- ═══ 좌측 사이드바 (홈과 동일 컴포넌트) ═══ -->
+    <aside class="sidebar">
+
+      <a class="brand-block" href="sign_language_homepage.html">
+        <div class="brand-mark">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+        </div>
+        <div>
+          <div class="brand-name">SORI</div>
+          <div class="brand-sub">AI 수어 학습</div>
+        </div>
+      </a>
+
+      <div class="user-block">
+        <div class="user-avatar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <div>
+          <div class="user-greeting-line">반가워요</div>
+          <div class="user-name-line"><span id="userName">친구</span>님</div>
+        </div>
+      </div>
+
+      <nav class="side-nav">
+        <a class="nav-item" href="sign_language_homepage.html">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          홈
+        </a>
+        <a class="nav-item active" href="education.html">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          교육
+        </a>
+        <a class="nav-item" href="quiz.html">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          퀴즈
+        </a>
+        <a class="nav-item" href="dictionary.html">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          사전
+        </a>
+        <a class="nav-item" href="chatbot.html">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          챗봇
+        </a>
+        <a class="nav-item" href="translation.html">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          수어 인식
+        </a>
+        <a class="nav-item" href="badges.html">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+          뱃지
+        </a>
+      </nav>
+
+      <a class="promo-card" href="badges.html">
+        <div class="promo-label">현재 등급</div>
+        <div class="promo-rank" id="userRankChip">🌱 수어 입문자</div>
+        <div class="promo-progress-track">
+          <div class="promo-progress-fill" id="promoProgressFill"></div>
+        </div>
+        <div class="promo-progress-next" id="promoProgressNext">다음 등급까지 100% 남았어요</div>
+        <div class="promo-cta">자세히 보기 →</div>
+      </a>
+    </aside>
+
+    <!-- ═══ 메인 영역 ═══ -->
+    <main class="main-area">
+
+    <section class="hero">
+      <div class="badge">📘 일상생활 중심 수어 학습</div>
+      <h1>교육 페이지</h1>
+      <p class="desc">
+        자주 사용하는 생활 단어를 중심으로 학습할 수 있도록 구성했습니다.
+        5개 단어를 1일차 학습 단위로 묶고, 10일차씩 상위 그룹으로 정리해 원하는 구간만 펼쳐서 볼 수 있게 만들었습니다.
+      </p>
+      <div class="stats">
+        <div class="stat-card">
+          <div class="stat-left">
+            <div class="stat-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <div class="stat-label">총 학습 일차</div>
+          </div>
+          <div class="stat-value">600일차</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-left">
+            <div class="stat-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            </div>
+            <div class="stat-label">총 단어 수</div>
+          </div>
+          <div class="stat-value">3,000개</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-left">
+            <div class="stat-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div class="stat-label">상위 묶음</div>
+          </div>
+          <div class="stat-value">60개</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="controls">
+      <div class="search-box">
+        <label for="searchInput">상위 묶음 검색</label>
+        <input id="searchInput" type="text" placeholder="예: 1일차, 101일차, 591일차" />
+      </div>
+      <div class="jump-box">
+        <label for="jumpInput">일차 바로가기</label>
+        <input id="jumpInput" type="number" min="1" max="600" placeholder="1~600" />
+      </div>
+    </section>
+
+    <section class="groups" id="groups"></section>
+    </main>
+  </div>
+
+  <!-- ── 단어 학습 전체화면 오버레이 ── -->
+  <div class="word-viewer" id="wordViewer">
+    <!-- 상단 헤더 -->
+    <div class="wv-header">
+      <button class="wv-back" id="wvBack">← 목록으로</button>
+      <div class="wv-title" id="wvTitle">1일차 학습</div>
+      <div class="wv-progress-info" id="wvProgressInfo">1 / 5</div>
+    </div>
+
+    <!-- 진행 도트 -->
+    <div class="wv-dots" id="wvDots"></div>
+
+    <!-- 3D 아바타 캔버스 -->
+    <div class="wv-stage" id="wvStage">
+      <canvas id="wvCanvas"></canvas>
+      <div class="wv-loading" id="wvLoading">
+        <div class="wv-spinner"></div>
+        <span>수어 데이터 불러오는 중…</span>
+      </div>
+      <div class="wv-controls">
+        <button class="wv-av-btn is-playing" id="wvPlayBtn">⏸</button>
+        <button class="wv-av-btn" id="wvReplayBtn">↺</button>
+        <div class="wv-av-progress"><div class="wv-av-bar" id="wvBar"></div></div>
+        <span class="wv-av-frame" id="wvFrame">00/00</span>
+        <!-- 속도 조절 -->
+        <div class="wv-speed-wrap">
+          <span class="wv-speed-label">속도</span>
+          <div class="wv-speed-btns" id="wvSpeedBtns">
+            <button class="wv-spd-btn" data-step="1">1</button>
+            <button class="wv-spd-btn" data-step="2">2</button>
+            <button class="wv-spd-btn active" data-step="3">3</button>
+            <button class="wv-spd-btn" data-step="4">4</button>
+            <button class="wv-spd-btn" data-step="5">5</button>
+          </div>
+        </div>
+        <span class="wv-shortcut-hint">[Space] 재생/정지 · [R] 다시보기 · [←][→] 이전/다음</span>
+      </div>
+    </div>
+
+    <!-- 하단: 단어명 + 이전/다음 버튼 -->
+    <div class="wv-footer">
+      <!-- 단어명 + 이전/다음 버튼 -->
+      <div class="wv-footer-top">
+        <div class="wv-word-info">
+          <div class="wv-word-label" id="wvWordLabel">학습 단어 :</div>
+          <div class="wv-word-name skeleton" id="wvWordName">　　　　</div>
+          <div class="wv-word-frames" id="wvWordFrames"></div>
+        </div>
+        <div class="wv-nav">
+          <button class="wv-nav-btn prev" id="wvPrev">← 이전</button>
+          <button class="wv-nav-btn next" id="wvNext">다음 →</button>
+        </div>
+      </div>
+      <!-- 단어 의미 + 수어 표현 방법 (dictionary.html과 동일 구조) -->
+      <div class="wv-desc-wrap">
+        <div class="wv-desc-box">
+          <div class="wv-desc-title meaning">📖 단어 의미</div>
+          <div class="wv-desc-text" id="wvDescMeaning"></div>
+        </div>
+        <div class="wv-desc-box">
+          <div class="wv-desc-title how">🤟 수어 표현 방법</div>
+          <div class="wv-desc-text skeleton" id="wvDescHow"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  AvatarPlayer — sign_quiz.html 아바타 엔진을 클래스로 캡슐화
+//  각 단어 카드가 독립적인 인스턴스를 가짐
+// ═══════════════════════════════════════════════════════════════
+const HC=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[0,9],[9,10],[10,11],[11,12],[0,13],[13,14],[14,15],[15,16],[0,17],[17,18],[18,19],[19,20],[5,9],[9,13],[13,17]];
+
+// ── 로봇 컬러 팔레트 (슬릭 화이트 + 다크 바이저) ──
+const R={
+  white:'#d8dce8', whiteHi:'#eef0f6', whiteLo:'#b0b6c8',
+  body:'#c0c6d4',  bodyHi:'#dce0ea',  bodyLo:'#98a0b4', bodyDk:'#6e7690',
+  gray:'#8a92a8',  grayHi:'#a8b0c4',  grayLo:'#626a80', grayDk:'#3e4458',
+  visor:'#0a0e18', visorEdge:'#2a3040',
+  panelLine:'rgba(0,0,0,.12)',
+  core:'#4af0d0',  accent:'#5cc8f5',
+};
+function h2r(h){return[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];}
+
+/* 전역 rAF 루프 — 모든 AvatarPlayer를 한 루프에서 구동 */
+const _allPlayers = new Set();
+let _rafActive = false;
+function _loop(){
+  _allPlayers.forEach(p => p._tick());
+  if(_allPlayers.size){ requestAnimationFrame(_loop); }
+  else { _rafActive = false; }
+}
+function _ensureLoop(){
+  if(!_rafActive){ _rafActive=true; requestAnimationFrame(_loop); }
+}
+
+class AvatarPlayer {
+  constructor(cvEl, progEl, frameEl, playBtn){
+    this.cv=cvEl; this.g=cvEl.getContext('2d');
+    this.progEl=progEl; this.frameEl=frameEl; this.playBtn=playBtn;
+    this.D=null; this.fr=0; this.playing=false;
+    this.speed=6; // fps
+    this.animT=0; this.frameAcc=0;
+    this.trail=[]; this.TL=5;
+    this.zMin=2; this.zMax=2.5; this.zMid=2.3;
+    this.sc=1; this.oX=0; this.oY=0;
+    this._resize();
+    this._ro=new ResizeObserver(()=>this._resize());
+    this._ro.observe(cvEl.parentElement);
+  }
+
+  load(data){
+    this.D=data; this.fr=0; this.trail=[];
+    this._calcBounds();
+    this._play();
+    _allPlayers.add(this);
+    _ensureLoop();
+  }
+
+  setSpeed(fps){ this.speed = fps; }
+
+  destroy(){
+    this.playing=false;
+    _allPlayers.delete(this);
+    this._ro.disconnect();
+  }
+
+  _play(){
+    this.playing=true;
+    if(this.playBtn){ this.playBtn.textContent='⏸'; this.playBtn.classList.add('is-playing'); }
+  }
+  _pause(){
+    this.playing=false;
+    if(this.playBtn){ this.playBtn.textContent='▶'; this.playBtn.classList.remove('is-playing'); }
+  }
+  toggle(){ this.playing ? this._pause() : this._play(); }
+  replay(){ this.fr=0; this.trail=[]; this._play(); }
+
+  _resize(){
+    const p=this.cv.parentElement;
+    this.W=this.cv.width=p.clientWidth;
+    this.H=this.cv.height=p.clientHeight;
+    if(this.D) this._calcBounds();
+    this._bg();
+  }
+
+  _tick(){
+    if(!this.D){ this._bg(); return; }
+    this.animT+=0.03;
+    if(this.playing){
+      // 목표 재생 속도: this.speed fps (rAF ~60fps)
+      const TARGET_FPS = this.speed;
+      this.frameAcc += TARGET_FPS / 60;
+      if(this.frameAcc >= 1){
+        this.frameAcc -= 1;
+        const f=this.D.frames[this.fr];
+        this.trail.push({lh:[...f.left_hand],rh:[...f.right_hand]});
+        if(this.trail.length>this.TL) this.trail.shift();
+        this.fr=(this.fr+1)%this.D.frames.length;
+      }
+    }
+    this._draw(this.fr);
+  }
+
+  _calcBounds(){
+    let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+    this.zMin=1e9; this.zMax=-1e9;
+    for(const f of this.D.frames)
+      for(const pt of[...f.pose,...f.left_hand,...f.right_hand,...f.face]){
+        if(pt[0]<x0)x0=pt[0]; if(pt[0]>x1)x1=pt[0];
+        if(pt[1]<y0)y0=pt[1]; if(pt[1]>y1)y1=pt[1];
+        if(pt[2]<this.zMin)this.zMin=pt[2]; if(pt[2]>this.zMax)this.zMax=pt[2];
+      }
+    this.zMid=(this.zMin+this.zMax)/2;
+    const pd=28;
+    this.sc=Math.min((this.W-pd*2)/(x1-x0||1),(this.H-pd*2)/(y1-y0||1));
+    // 1차: 원시 좌표 기준 임시 중심화
+    this.oX=this.W/2-((x0+x1)/2)*this.sc;
+    this.oY=this.H/2-((y0+y1)/2)*this.sc;
+    // 2차: ps(원근 배율)가 적용된 실제 투영 좌표로 재중심화
+    let px0=1e9,px1=-1e9,py0=1e9,py1=-1e9;
+    for(const f of this.D.frames)
+      for(const pt of[...f.pose,...f.left_hand,...f.right_hand,...f.face]){
+        const p=this._pj(pt);
+        if(p.x<px0)px0=p.x; if(p.x>px1)px1=p.x;
+        if(p.y<py0)py0=p.y; if(p.y>py1)py1=p.y;
+      }
+    this.oX+=this.W/2-(px0+px1)/2;
+    this.oY+=this.H/2-(py0+py1)/2;
+  }
+
+  /* 좌표 투영 */
+  _pj(pt){
+    const zN=(pt[2]-this.zMid)/(this.zMax-this.zMin+.001),ps=1-zN*.25;
+    return{x:pt[0]*this.sc*ps+this.oX, y:pt[1]*this.sc*ps+this.oY, z:pt[2], s:ps};
+  }
+  _zB(z){ return .55+(1-(z-this.zMin)/(this.zMax-this.zMin+.001))*.45; }
+  _zS(z){ return Math.max(0.1,.88+(1-(z-this.zMin)/(this.zMax-this.zMin+.001))*.24); }
+  _d3(a,b){ return Math.sqrt((a[0]-b[0])**2+(a[1]-b[1])**2+(a[2]-b[2])**2); }
+  _m3(a,b){ return[(a[0]+b[0])/2,(a[1]+b[1])/2,(a[2]+b[2])/2]; }
+  _col(hex,z){ const b=this._zB(z),[r,g,bl]=h2r(hex); return`rgb(${r*b|0},${g*b|0},${bl*b|0})`; }
+
+  _draw(idx){
+    const {g,W,H}=this;
+    g.clearRect(0,0,W,H); this._bg();
+    if(!this.D) return;
+    this._drawTrail();
+    this._drawRobot(this.D.frames[idx]);
+    /* 진행 UI */
+    const pct=this.D.frames.length>1?(idx/(this.D.frames.length-1))*100:0;
+    if(this.progEl) this.progEl.style.width=pct+'%';
+    if(this.frameEl) this.frameEl.textContent=`${String(idx).padStart(2,'0')}/${String(this.D.frames.length-1).padStart(2,'0')}`;
+  }
+
+  _bg(){
+    const {g,W,H}=this;
+    // 배경 그리드 (더 은은하게)
+    g.strokeStyle='rgba(18,22,38,.35)'; g.lineWidth=.5;
+    for(let x=0;x<W;x+=55){g.beginPath();g.moveTo(x,0);g.lineTo(x,H);g.stroke();}
+    for(let y=0;y<H;y+=55){g.beginPath();g.moveTo(0,y);g.lineTo(W,y);g.stroke();}
+    // 비네팅
+    const v=g.createRadialGradient(W/2,H*.38,0,W/2,H*.38,Math.max(W,H)*.65);
+    v.addColorStop(0,'rgba(12,18,35,.1)'); v.addColorStop(.5,'rgba(8,12,22,.35)'); v.addColorStop(1,'rgba(6,8,14,.75)');
+    g.fillStyle=v; g.fillRect(0,0,W,H);
+  }
+
+  _drawTrail(){
+    const {g}=this;
+    this.trail.forEach((tf,ti)=>{
+      const a=(ti+1)/this.trail.length*.15;
+      const dr=(pts,r,gg,b)=>{
+        if(!pts) return;
+        HC.forEach(([x,y])=>{
+          if(!pts[x]||!pts[y]) return;
+          const pa=this._pj(pts[x]),pb=this._pj(pts[y]);
+          g.beginPath();g.moveTo(pa.x,pa.y);g.lineTo(pb.x,pb.y);
+          g.strokeStyle=`rgba(${r},${gg},${b},${a})`;g.lineWidth=3;g.lineCap='round';g.stroke();
+        });
+      };
+      if(tf.rh) dr(tf.rh,92,156,245);
+      if(tf.lh) dr(tf.lh,245,92,138);
+    });
+  }
+
+  _drawRobot(f){
+    const p=f.pose;
+    const hd=p[0],ls=p[2],rs=p[5],le=p[3],re=p[6],lw=p[4],rw=p[7],hip=p[8];
+    if(!hd||!ls||!rs) return;
+    const lH=f.right_hand,rH=f.left_hand; // 교차 매핑
+    const parts=[];
+    parts.push({z:(ls[2]+rs[2])/2+.01, fn:()=>this._body(ls,rs,hip,hd)});
+    if(le&&lw) parts.push({z:Math.min(ls[2],le[2],lw[2]), fn:()=>this._arm(ls,le,lw)});
+    if(re&&rw) parts.push({z:Math.min(rs[2],re[2],rw[2]), fn:()=>this._arm(rs,re,rw)});
+    if(lH&&lH.length>=21) parts.push({z:lH[0][2]-.01, fn:()=>this._hand(lH,'#5c9cf5')});
+    if(rH&&rH.length>=21) parts.push({z:rH[0][2]-.01, fn:()=>this._hand(rH,'#f55c8a')});
+    parts.push({z:hd[2]-.02, fn:()=>this._head(hd,ls,rs,f.face)});
+    parts.sort((a,b)=>b.z-a.z);
+    parts.forEach(pt=>pt.fn());
+  }
+
+  // ── 로봇 머리 (슬릭 헬멧 + 다크 바이저) ──
+  _head(hd,ls,rs,face){
+    const {g,animT}=this;
+    const hp=this._pj(hd),shD=this._d3(ls,rs);
+    const rs2=shD*.32*this.sc*this._zS(hd[2]),b=this._zB(hd[2]);
+
+    // 목 (슬림 실린더)
+    const neckBot=this._pj(this._m3(ls,rs));
+    const nw=rs2*.18;
+    g.beginPath();
+    g.moveTo(hp.x-nw,hp.y+rs2*.55);g.lineTo(hp.x-nw*.8,neckBot.y);
+    g.lineTo(hp.x+nw*.8,neckBot.y);g.lineTo(hp.x+nw,hp.y+rs2*.55);g.closePath();
+    const ng=g.createLinearGradient(hp.x-nw,0,hp.x+nw,0);
+    ng.addColorStop(0,this._col(R.grayDk,hd[2]));ng.addColorStop(.3,this._col(R.gray,hd[2]));
+    ng.addColorStop(.5,this._col(R.grayHi,hd[2]));ng.addColorStop(.7,this._col(R.gray,hd[2]));
+    ng.addColorStop(1,this._col(R.grayDk,hd[2]));g.fillStyle=ng;g.fill();
+
+    // 목 디테일 라인
+    g.beginPath();
+    g.moveTo(hp.x-nw*.6,neckBot.y-2);g.lineTo(hp.x+nw*.6,neckBot.y-2);
+    g.strokeStyle=R.panelLine;g.lineWidth=.8;g.stroke();
+
+    // 헬멧 (캡슐형 — 상단이 더 둥글게)
+    const hw=rs2*.88,hh=rs2*1.0,headR=rs2*.42;
+    this._rrect(hp.x-hw,hp.y-hh,hw*2,hh*1.8,headR);
+    const hg=g.createRadialGradient(hp.x-rs2*.2,hp.y-rs2*.3,rs2*.1,hp.x,hp.y,rs2*1.2);
+    hg.addColorStop(0,this._col(R.whiteHi,hd[2]));hg.addColorStop(.4,this._col(R.white,hd[2]));
+    hg.addColorStop(.85,this._col(R.whiteLo,hd[2]));hg.addColorStop(1,this._col(R.bodyLo,hd[2]));
+    g.fillStyle=hg;g.fill();
+
+    // 헬멧 에지 하이라이트
+    g.save();g.globalAlpha=.12*b;
+    g.beginPath();g.ellipse(hp.x-hw*.4,hp.y-hh*.5,hw*.25,hh*.35,-.3,0,Math.PI*2);
+    g.fillStyle='#fff';g.fill();g.restore();
+
+    // 다크 바이저 (넓은 곡면)
+    const vY=hp.y-hh*.05,vW=hw*.78,vH=hh*.52,vR=rs2*.28;
+    this._rrect(hp.x-vW,vY-vH*.45,vW*2,vH,vR);
+    const vg=g.createLinearGradient(hp.x-vW,vY-vH*.5,hp.x+vW,vY+vH*.5);
+    vg.addColorStop(0,R.visorEdge);vg.addColorStop(.15,R.visor);
+    vg.addColorStop(.5,'#050810');vg.addColorStop(.85,R.visor);vg.addColorStop(1,R.visorEdge);
+    g.fillStyle=vg;g.fill();
+
+    // 바이저 반사 하이라이트
+    g.save();g.globalAlpha=.08*b;
+    g.beginPath();g.ellipse(hp.x-vW*.2,vY-vH*.15,vW*.5,vH*.2,-.1,0,Math.PI*2);
+    g.fillStyle='#6090cc';g.fill();g.restore();
+
+    // 바이저 하단 은은한 글로우
+    g.save();g.globalAlpha=.06*b*(Math.sin(animT*1.5)*.2+.8);
+    g.beginPath();g.ellipse(hp.x,vY+vH*.3,vW*.6,vH*.15,0,0,Math.PI*2);
+    g.fillStyle='#50a0ff';g.fill();g.restore();
+
+    // 헬멧 패널 라인 (귀 부분 디테일)
+    g.save();g.globalAlpha=.15*b;
+    g.beginPath();g.moveTo(hp.x-hw*.7,hp.y-hh*.3);
+    g.quadraticCurveTo(hp.x-hw*.85,hp.y,hp.x-hw*.7,hp.y+hh*.3);
+    g.strokeStyle='#000';g.lineWidth=.7;g.stroke();
+    g.beginPath();g.moveTo(hp.x+hw*.7,hp.y-hh*.3);
+    g.quadraticCurveTo(hp.x+hw*.85,hp.y,hp.x+hw*.7,hp.y+hh*.3);
+    g.stroke();g.restore();
+
+    // 이어 포트 (양쪽 작은 원형 디테일)
+    [hp.x-hw*.82, hp.x+hw*.82].forEach(ex=>{
+      const ey=hp.y+hh*.05,er=Math.max(0.1,rs2*.08);
+      g.beginPath();g.arc(ex,ey,er,0,Math.PI*2);g.fillStyle=this._col(R.grayLo,hd[2]);g.fill();
+      g.beginPath();g.arc(ex,ey,Math.max(0.1,er*.5),0,Math.PI*2);g.fillStyle=this._col(R.grayDk,hd[2]);g.fill();
+    });
+  }
+
+  _rrect(x,y,w,h,r){
+    const {g}=this;
+    g.beginPath();g.moveTo(x+r,y);g.lineTo(x+w-r,y);g.quadraticCurveTo(x+w,y,x+w,y+r);
+    g.lineTo(x+w,y+h-r);g.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+    g.lineTo(x+r,y+h);g.quadraticCurveTo(x,y+h,x,y+h-r);
+    g.lineTo(x,y+r);g.quadraticCurveTo(x,y,x+r,y);g.closePath();
+  }
+
+  // ── 로봇 몸통 (슬릭 화이트/실버) ──
+  _body(ls,rs,hip,hd){
+    const {g,animT}=this;
+    const lp=this._pj(ls),rp=this._pj(rs);
+    const bz=(ls[2]+rs[2])/2,b=this._zB(bz);
+    const hcp=hip?this._pj(hip):this._pj([(ls[0]+rs[0])/2,ls[1]+.5,bz+.02]);
+    const cx=(lp.x+rp.x)/2,shW=Math.abs(rp.x-lp.x);
+    const topY=(lp.y+rp.y)/2,botY=hcp.y;
+    const bodyW=shW*.55,hipW=shW*.38,br=shW*.12;
+
+    // 몸통 (둥근 사다리꼴)
+    g.beginPath();
+    g.moveTo(cx-bodyW+br,topY);g.lineTo(cx+bodyW-br,topY);
+    g.quadraticCurveTo(cx+bodyW,topY,cx+bodyW,topY+br);
+    g.lineTo(cx+hipW,botY-br);g.quadraticCurveTo(cx+hipW,botY,cx+hipW-br,botY);
+    g.lineTo(cx-hipW+br,botY);g.quadraticCurveTo(cx-hipW,botY,cx-hipW,botY-br);
+    g.lineTo(cx-bodyW,topY+br);g.quadraticCurveTo(cx-bodyW,topY,cx-bodyW+br,topY);g.closePath();
+
+    // 메인 그라데이션 (클린 실버)
+    const bg=g.createLinearGradient(cx-bodyW,topY,cx+bodyW*.3,botY);
+    bg.addColorStop(0,this._col(R.bodyHi,bz));bg.addColorStop(.3,this._col(R.body,bz));
+    bg.addColorStop(.7,this._col(R.bodyLo,bz));bg.addColorStop(1,this._col(R.bodyDk,bz));
+    g.fillStyle=bg;g.fill();
+
+    // 측면 음영
+    const slg=g.createLinearGradient(cx-bodyW,0,cx-bodyW*.3,0);
+    slg.addColorStop(0,'rgba(0,0,0,.18)');slg.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=slg;g.fill();
+    const srg=g.createLinearGradient(cx+bodyW,0,cx+bodyW*.3,0);
+    srg.addColorStop(0,'rgba(0,0,0,.18)');srg.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=srg;g.fill();
+
+    // 상단 하이라이트
+    g.save();g.globalAlpha=.06*b;
+    g.beginPath();g.ellipse(cx-bodyW*.15,topY+shW*.08,bodyW*.5,shW*.12,-.1,0,Math.PI*2);
+    g.fillStyle='#fff';g.fill();g.restore();
+
+    // 가슴 패널 라인
+    g.strokeStyle=R.panelLine;g.lineWidth=.6;
+    g.beginPath();g.moveTo(cx,topY+shW*.08);g.lineTo(cx,botY-shW*.06);g.stroke();
+    g.beginPath();g.moveTo(cx-bodyW*.65,topY+shW*.14);g.lineTo(cx+bodyW*.65,topY+shW*.14);g.stroke();
+
+    // 코어 발광
+    const coreY=topY+(botY-topY)*.38,coreR=Math.max(0.1,shW*.10);
+    const pulse=Math.sin(animT*2)*.15+.85;
+    const cg=g.createRadialGradient(cx,coreY,0,cx,coreY,coreR*3.5);
+    cg.addColorStop(0,`rgba(74,240,208,${.1*b*pulse})`);cg.addColorStop(1,'rgba(74,240,208,0)');
+    g.fillStyle=cg;g.beginPath();g.arc(cx,coreY,coreR*3.5,0,Math.PI*2);g.fill();
+    g.beginPath();g.arc(cx,coreY,coreR,0,Math.PI*2);
+    g.strokeStyle=`rgba(74,240,208,${.4*b*pulse})`;g.lineWidth=1.5;g.stroke();
+    g.beginPath();g.arc(cx,coreY,Math.max(0.1,coreR*.55),0,Math.PI*2);
+    const ig=g.createRadialGradient(cx,coreY,0,cx,coreY,coreR*.55);
+    ig.addColorStop(0,`rgba(180,255,240,${.85*b*pulse})`);ig.addColorStop(.5,`rgba(74,240,208,${.5*b*pulse})`);
+    ig.addColorStop(1,`rgba(74,240,208,${.15*b*pulse})`);
+    g.fillStyle=ig;g.fill();
+
+    // 어깨 관절 (세련된 볼 조인트)
+    [lp,rp].forEach(sp=>{
+      const jr=Math.max(0.1,shW*.06);
+      g.beginPath();g.arc(sp.x,sp.y,Math.max(0.1,jr*1.15),0,Math.PI*2);g.fillStyle=this._col(R.grayDk,bz);g.fill();
+      const jg=g.createRadialGradient(sp.x-jr*.25,sp.y-jr*.25,0,sp.x,sp.y,jr);
+      jg.addColorStop(0,this._col(R.grayHi,bz));jg.addColorStop(.5,this._col(R.gray,bz));jg.addColorStop(1,this._col(R.grayDk,bz));
+      g.beginPath();g.arc(sp.x,sp.y,jr,0,Math.PI*2);g.fillStyle=jg;g.fill();
+      g.beginPath();g.arc(sp.x-jr*.2,sp.y-jr*.2,Math.max(0.1,jr*.25),0,Math.PI*2);
+      g.fillStyle=`rgba(255,255,255,${.15*b})`;g.fill();
+    });
+  }
+
+  // ── 로봇 팔 ──
+  _arm(sh,el,wr){
+    const {g}=this;
+    const elP=this._pj(el),wrP=this._pj(wr);
+    const aR=this._d3(sh,el)*.10*this.sc;
+
+    // 상완
+    this._limb(sh,el,aR,aR*.82,R.body,R.bodyHi,R.bodyLo,R.bodyDk);
+    // 상완 패널 라인
+    const uMid=this._pj(this._m3(sh,el));
+    g.beginPath();g.arc(uMid.x,uMid.y,Math.max(0.1,aR*.5*this._zS((sh[2]+el[2])/2)),0,Math.PI*2);
+    g.strokeStyle=R.panelLine;g.lineWidth=.5;g.stroke();
+
+    // 팔꿈치 관절
+    const eR=Math.max(0.1,aR*.85);
+    g.beginPath();g.arc(elP.x,elP.y,Math.max(0.1,eR*1.1),0,Math.PI*2);g.fillStyle=this._col(R.grayDk,el[2]);g.fill();
+    const ejg=g.createRadialGradient(elP.x-eR*.2,elP.y-eR*.2,0,elP.x,elP.y,eR);
+    ejg.addColorStop(0,this._col(R.grayHi,el[2]));ejg.addColorStop(.4,this._col(R.gray,el[2]));ejg.addColorStop(1,this._col(R.grayDk,el[2]));
+    g.beginPath();g.arc(elP.x,elP.y,eR,0,Math.PI*2);g.fillStyle=ejg;g.fill();
+    g.beginPath();g.arc(elP.x-eR*.2,elP.y-eR*.2,Math.max(0.1,eR*.2),0,Math.PI*2);
+    g.fillStyle=`rgba(255,255,255,${.1*this._zB(el[2])})`;g.fill();
+
+    // 전완
+    this._limb(el,wr,aR*.82,aR*.62,R.gray,R.grayHi,R.grayLo,R.grayDk);
+
+    // 손목 밴드
+    const wR=Math.max(0.1,aR*.65);
+    g.beginPath();g.arc(wrP.x,wrP.y,wR,0,Math.PI*2);
+    g.strokeStyle=this._col(R.accent,wr[2]);g.lineWidth=2;g.stroke();
+    g.beginPath();g.arc(wrP.x,wrP.y,Math.max(0.1,wR*.7),0,Math.PI*2);
+    g.strokeStyle=`rgba(92,200,245,${.2*this._zB(wr[2])})`;g.lineWidth=.8;g.stroke();
+  }
+
+  _limb(a,b,rA,rB,base,hi,lo,dk){
+    const {g}=this;
+    const pa=this._pj(a),pb=this._pj(b),az=(a[2]+b[2])/2,zs=this._zS(az);
+    const rpA=rA*zs,rpB=rB*zs;
+    const an=Math.atan2(pb.y-pa.y,pb.x-pa.x),pp=an+Math.PI/2;
+    const cp=Math.cos(pp),sp2=Math.sin(pp);
+    g.beginPath();
+    g.moveTo(pa.x+cp*rpA,pa.y+sp2*rpA);g.lineTo(pb.x+cp*rpB,pb.y+sp2*rpB);
+    g.arc(pb.x,pb.y,Math.max(0.1,rpB),pp,pp+Math.PI);
+    g.lineTo(pa.x-cp*rpA,pa.y-sp2*rpA);g.arc(pa.x,pa.y,Math.max(0.1,rpA),pp+Math.PI,pp+Math.PI*2);g.closePath();
+    const mr=Math.max(rpA,rpB),mx=(pa.x+pb.x)/2,my=(pa.y+pb.y)/2;
+    const lg=g.createLinearGradient(mx-cp*mr*1.2,my-sp2*mr*1.2,mx+cp*mr*1.2,my+sp2*mr*1.2);
+    lg.addColorStop(0,this._col(dk||R.grayDk,az));lg.addColorStop(.2,this._col(lo||R.grayLo,az));
+    lg.addColorStop(.45,this._col(base||R.gray,az));lg.addColorStop(.55,this._col(hi||R.grayHi,az));
+    lg.addColorStop(.75,this._col(base||R.gray,az));lg.addColorStop(.9,this._col(lo||R.grayLo,az));
+    lg.addColorStop(1,this._col(dk||R.grayDk,az));
+    g.fillStyle=lg;g.fill();
+  }
+
+  // ── 로봇 손 (슬릭 화이트) ──
+  _hand(hp,color){
+    const {g}=this;
+    if(!hp||hp.length<21) return;
+    const[cr,cg2,cb]=h2r(color),az=hp[0][2],b=this._zB(az);
+
+    // 손바닥
+    const pi=[0,1,5,9,13,17];
+    g.beginPath();pi.forEach((i,idx)=>{const p=this._pj(hp[i]);idx===0?g.moveTo(p.x,p.y):g.lineTo(p.x,p.y);});g.closePath();
+    const w=this._pj(hp[0]);
+    const pg=g.createRadialGradient(w.x,w.y,0,w.x,w.y,45*this.sc*this._zS(az));
+    pg.addColorStop(0,this._col(R.whiteHi,az));pg.addColorStop(.4,this._col(R.white,az));pg.addColorStop(1,this._col(R.whiteLo,az));
+    g.fillStyle=pg;g.fill();
+    const pi2=[0,5,6,10,14,18,17];
+    g.beginPath();pi2.forEach((i,idx)=>{const p=this._pj(hp[i]);idx===0?g.moveTo(p.x,p.y):g.lineTo(p.x,p.y);});g.closePath();
+    g.fillStyle=this._col(R.white,az);g.fill();
+
+    // 손가락 (슬릭 화이트 캡슐)
+    const baseR=this._d3(hp[0],hp[9])*.14;
+    [[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16],[17,18,19,20]].forEach((f,fi)=>{
+      const isThumb=fi===0;
+      const pts=f.map((idx,j)=>{
+        const p=this._pj(hp[idx]);
+        const wF=isThumb?[.85,.75,.6,.45]:[.95,.83,.68,.45];
+        return{x:p.x,y:p.y,z:hp[idx][2],r:Math.max(0.1,baseR*(wF[j]||.5)*this.sc*this._zS(hp[idx][2]))};
+      });
+      const L=[],Ri=[];
+      for(let j=0;j<pts.length-1;j++){
+        const a=pts[j],b2=pts[j+1];
+        const ang=Math.atan2(b2.y-a.y,b2.x-a.x),pp=ang+Math.PI/2;
+        const cx=Math.cos(pp),sx=Math.sin(pp);
+        L.push({x:a.x+cx*a.r,y:a.y+sx*a.r});
+        if(j===pts.length-2)L.push({x:b2.x+cx*b2.r,y:b2.y+sx*b2.r});
+        Ri.push({x:a.x-cx*a.r,y:a.y-sx*a.r});
+        if(j===pts.length-2)Ri.push({x:b2.x-cx*b2.r,y:b2.y-sx*b2.r});
+      }
+      const tip=pts[pts.length-1];
+      g.beginPath();
+      const sa=Math.atan2(pts[1].y-pts[0].y,pts[1].x-pts[0].x)+Math.PI/2;
+      g.arc(pts[0].x,pts[0].y,Math.max(0.1,pts[0].r),sa,sa+Math.PI);
+      for(let j=0;j<L.length;j++){
+        if(j===0)g.lineTo(L[j].x,L[j].y);
+        else{const pv=L[j-1],cu=L[j];g.quadraticCurveTo(pv.x+(cu.x-pv.x)*.5,pv.y+(cu.y-pv.y)*.5,cu.x,cu.y);}
+      }
+      const ta=Math.atan2(tip.y-pts[pts.length-2].y,tip.x-pts[pts.length-2].x)+Math.PI/2;
+      g.arc(tip.x,tip.y,Math.max(0.1,tip.r),ta-Math.PI,ta);
+      for(let j=Ri.length-1;j>=0;j--){
+        if(j===Ri.length-1)g.lineTo(Ri[j].x,Ri[j].y);
+        else{const pv=Ri[j+1],cu=Ri[j];g.quadraticCurveTo(pv.x+(cu.x-pv.x)*.5,pv.y+(cu.y-pv.y)*.5,cu.x,cu.y);}
+      }
+      g.closePath();
+
+      // 그라데이션: 화이트/실버 톤
+      const avgZ=f.reduce((s,idx)=>s+hp[idx][2],0)/f.length;
+      const midX=(pts[0].x+tip.x)/2,midY=(pts[0].y+tip.y)/2;
+      const fAng=Math.atan2(tip.y-pts[0].y,tip.x-pts[0].x)+Math.PI/2;
+      const maxR=pts[0].r;
+      const fg=g.createLinearGradient(midX-Math.cos(fAng)*maxR*1.3,midY-Math.sin(fAng)*maxR*1.3,midX+Math.cos(fAng)*maxR*1.3,midY+Math.sin(fAng)*maxR*1.3);
+      fg.addColorStop(0,this._col(R.whiteLo,avgZ));fg.addColorStop(.2,this._col(R.white,avgZ));
+      fg.addColorStop(.45,this._col(R.whiteHi,avgZ));fg.addColorStop(.55,this._col(R.whiteHi,avgZ));
+      fg.addColorStop(.8,this._col(R.white,avgZ));fg.addColorStop(1,this._col(R.whiteLo,avgZ));
+      g.fillStyle=fg;g.fill();
+
+      // 관절 라인 (미세)
+      for(let j=1;j<pts.length-1;j++){
+        g.beginPath();g.arc(pts[j].x,pts[j].y,Math.max(0.1,pts[j].r*.85),0,Math.PI*2);
+        g.strokeStyle=`rgba(0,0,0,${.06*this._zB(pts[j].z)})`;g.lineWidth=.5;g.stroke();
+      }
+      // 손가락 끝 하이라이트
+      const tR=Math.max(0.1,tip.r*.75);
+      const tg2=g.createRadialGradient(tip.x-tR*.2,tip.y-tR*.2,0,tip.x,tip.y,tR*1.1);
+      tg2.addColorStop(0,this._col(R.whiteHi,tip.z));tg2.addColorStop(.4,this._col(R.white,tip.z));tg2.addColorStop(1,'rgba(0,0,0,0)');
+      g.beginPath();g.arc(tip.x,tip.y,tR*1.1,0,Math.PI*2);g.fillStyle=tg2;g.fill();
+    });
+
+    // 손목 색상 링
+    g.beginPath();g.arc(w.x,w.y,Math.max(0.1,7*this._zS(az)),0,Math.PI*2);
+    g.strokeStyle=`rgba(${cr},${cg2},${cb},${.4*b})`;g.lineWidth=2;g.stroke();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  교육 페이지
+// ═══════════════════════════════════════════════════════════════
+const GCS = 'https://storage.googleapis.com/sign-language-data-2026-jw/processed/avatars_3d';
+const API_BASE = 'https://antler-bulldog-puppet.ngrok-free.dev';
+const NGROK_H  = { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' };
+const REAL_DAYS = 600;
+const totalDays = 600, wordsPerDay = 5;   // 약 1,700개 단어 / 5 = 340일차
+
+// 커리큘럼 순서 ID 배열 — daily.py WORD_ORDER와 동일 소스 (정수 배열, 가장 경량)
+// N일차 단어 = WORD_ORDER.slice((N-1)*5, N*5) → GET /words/{id} 로 실존 API 호출
+const WORD_ORDER = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255,256,257,258,259,260,261,262,263,264,265,266,267,268,269,270,271,272,273,274,275,276,277,278,279,280,281,282,283,284,285,286,287,288,289,290,291,292,293,294,295,296,297,298,299,300,301,302,303,304,305,306,307,308,309,310,311,312,313,314,315,316,317,318,319,320,321,322,323,324,325,326,327,328,329,330,331,332,333,334,335,336,337,338,339,340,341,342,343,344,345,346,347,348,349,350,351,352,353,354,355,356,357,358,359,360,361,362,363,364,365,366,367,368,369,370,371,372,373,374,375,376,377,378,379,380,381,382,383,384,385,386,387,388,389,390,391,392,393,394,395,396,397,398,399,400,401,402,403,404,405,406,407,408,409,410,411,412,413,414,415,416,417,418,419,420,421,422,423,424,425,426,427,428,429,430,431,432,433,434,435,436,437,438,439,440,441,442,443,444,445,446,447,448,449,450,451,452,453,454,455,456,457,458,459,460,461,462,463,464,465,466,467,468,469,470,471,472,473,474,475,476,477,478,479,480,481,482,483,484,485,486,487,488,489,490,491,492,493,494,495,496,497,498,499,500,501,502,503,504,505,506,507,508,509,510,511,512,513,514,515,516,517,518,519,520,521,522,523,524,525,526,527,528,529,530,531,532,533,534,535,536,537,538,539,540,541,542,543,544,545,546,547,548,549,550,551,552,553,554,555,556,557,558,559,560,561,562,563,564,565,566,567,568,569,570,571,572,573,574,575,576,577,578,579,580,581,582,583,584,585,586,587,588,589,590,591,592,593,594,595,596,597,598,599,600,601,602,603,604,605,606,607,608,609,610,611,612,613,614,615,616,617,618,619,620,621,622,623,624,625,626,627,628,629,630,631,632,633,634,635,636,637,638,639,640,641,642,643,644,645,646,647,648,649,650,651,652,653,654,655,656,657,658,659,660,661,662,663,664,665,666,667,668,669,670,671,672,673,674,675,676,677,678,679,680,681,682,683,684,685,686,687,688,689,690,691,692,693,694,695,696,697,698,699,700,701,702,703,704,705,706,707,708,709,710,711,712,713,714,715,716,717,718,719,720,721,722,723,724,725,726,727,728,729,730,731,732,733,734,735,736,737,738,739,740,741,742,743,744,745,746,747,748,749,750,751,752,753,754,755,756,757,758,759,760,761,762,763,764,765,766,767,768,769,770,771,772,773,774,775,776,777,778,779,780,781,782,783,784,785,786,787,788,789,790,791,792,793,794,795,796,797,798,799,800,801,802,803,804,805,806,807,808,809,810,811,812,813,814,815,816,817,818,819,820,821,822,823,824,825,826,827,828,829,830,831,832,833,834,835,836,837,838,839,840,841,842,843,844,845,846,847,848,849,850,851,852,853,854,855,856,857,858,859,860,861,862,863,864,865,866,867,868,869,870,871,872,873,874,875,876,877,878,879,880,881,882,883,884,885,886,887,888,889,890,891,892,893,894,895,896,897,898,899,900,901,902,903,904,905,906,907,908,909,910,911,912,913,914,915,916,917,918,919,920,921,922,923,924,925,926,927,928,929,930,931,932,933,934,935,936,937,938,939,940,941,942,943,944,945,946,947,948,949,950,951,952,953,954,955,956,957,958,959,960,961,962,963,964,965,966,967,968,969,970,971,972,973,974,975,976,977,978,979,980,981,982,983,984,985,986,987,988,989,990,991,992,993,994,995,996,997,998,999,1000,1001,1002,1003,1004,1005,1006,1007,1008,1009,1010,1011,1012,1013,1014,1015,1016,1017,1018,1019,1020,1021,1022,1023,1024,1025,1026,1027,1028,1029,1030,1031,1032,1033,1034,1035,1036,1037,1038,1039,1040,1041,1042,1043,1044,1045,1046,1047,1048,1049,1050,1051,1052,1053,1054,1055,1056,1057,1058,1059,1060,1061,1062,1063,1064,1065,1066,1067,1068,1069,1070,1071,1072,1073,1074,1075,1076,1077,1078,1079,1080,1081,1082,1083,1084,1085,1086,1087,1088,1089,1090,1091,1092,1093,1094,1095,1096,1097,1098,1099,1100,1101,1102,1103,1104,1105,1106,1107,1108,1109,1110,1111,1112,1113,1114,1115,1116,1117,1118,1119,1120,1121,1122,1123,1124,1125,1126,1127,1128,1129,1130,1131,1132,1133,1134,1135,1136,1137,1138,1139,1140,1141,1142,1143,1144,1145,1146,1147,1148,1149,1150,1151,1152,1153,1154,1155,1156,1157,1158,1159,1160,1161,1162,1163,1164,1165,1166,1167,1168,1169,1170,1171,1172,1173,1174,1175,1176,1177,1178,1179,1180,1181,1182,1183,1184,1185,1186,1187,1188,1189,1190,1191,1192,1193,1194,1195,1196,1197,1198,1199,1200,1201,1202,1203,1204,1205,1206,1207,1208,1209,1210,1211,1212,1213,1214,1215,1216,1217,1218,1219,1220,1221,1222,1223,1224,1225,1226,1227,1228,1229,1230,1231,1232,1233,1234,1235,1236,1237,1238,1239,1240,1241,1242,1243,1244,1245,1246,1247,1248,1249,1250,1251,1252,1253,1254,1255,1256,1257,1258,1259,1260,1261,1262,1263,1264,1265,1266,1267,1268,1269,1270,1271,1272,1273,1274,1275,1276,1277,1278,1279,1280,1281,1282,1283,1284,1285,1286,1287,1288,1289,1290,1291,1292,1293,1294,1295,1296,1297,1298,1299,1300,1301,1302,1303,1304,1305,1306,1307,1308,1309,1310,1311,1312,1313,1314,1315,1316,1317,1318,1319,1320,1321,1322,1323,1324,1325,1326,1327,1328,1329,1330,1331,1332,1333,1334,1335,1336,1337,1338,1339,1340,1341,1342,1343,1344,1345,1346,1347,1348,1349,1350,1351,1352,1353,1354,1355,1356,1357,1358,1359,1360,1361,1362,1363,1364,1365,1366,1367,1368,1369,1370,1371,1372,1373,1374,1375,1376,1377,1378,1379,1380,1381,1382,1383,1384,1385,1386,1387,1388,1389,1390,1391,1392,1393,1394,1395,1396,1397,1398,1399,1400,1401,1402,1403,1404,1405,1406,1407,1408,1409,1410,1411,1412,1413,1414,1415,1416,1417,1418,1419,1420,1421,1422,1423,1424,1425,1426,1427,1428,1429,1430,1431,1432,1433,1434,1435,1436,1437,1438,1439,1440,1441,1442,1443,1444,1445,1446,1447,1448,1449,1450,1451,1452,1453,1454,1455,1456,1457,1458,1459,1460,1461,1462,1463,1464,1465,1466,1467,1468,1469,1470,1471,1472,1473,1474,1475,1476,1477,1478,1479,1480,1481,1482,1483,1484,1485,1486,1487,1488,1489,1490,1491,1492,1493,1494,1495,1496,1497,1498,1499,1500,1501,1502,1503,1504,1505,1506,1507,1508,1509,1510,1511,1512,1513,1514,1515,1516,1517,1518,1519,1520,1521,1522,1523,1524,1525,1526,1527,1528,1529,1530,1531,1532,1533,1534,1535,1536,1537,1538,1539,1540,1541,1542,1543,1544,1545,1546,1547,1548,1549,1550,1551,1552,1553,1554,1555,1556,1557,1558,1559,1560,1561,1562,1563,1564,1565,1566,1567,1568,1569,1570,1571,1572,1573,1574,1575,1576,1577,1578,1579,1580,1581,1582,1583,1584,1585,1586,1587,1588,1589,1590,1591,1592,1593,1594,1595,1596,1597,1598,1599,1600,1601,1602,1603,1604,1605,1606,1607,1608,1609,1610,1611,1612,1613,1614,1615,1616,1617,1618,1619,1620,1621,1622,1623,1624,1625,1626,1627,1628,1629,1630,1631,1632,1633,1634,1635,1636,1637,1638,1639,1640,1641,1642,1643,1644,1645,1646,1647,1648,1649,1650,1651,1652,1653,1654,1655,1656,1657,1658,1659,1660,1661,1662,1663,1664,1665,1666,1667,1668,1669,1670,1671,1672,1673,1674,1675,1676,1677,1678,1679,1680,1681,1682,1683,1684,1685,1686,1687,1688,1689,1690,1691,1692,1693,1694,1695,1696,1697,1698,1699,1700,1701,1702,1703,1704,1705,1706,1707,1708,1709,1710,1711,1712,1713,1714,1715,1716,1717,1718,1719,1720,1721,1722,1723,1724,1725,1726,1727,1728,1729,1730,1731,1732,1733,1734,1735,1736,1737,1738,1739,1740,1741,1742,1743,1744,1745,1746,1747,1748,1749,1750,1751,1752,1753,1754,1755,1756,1757,1758,1759,1760,1761,1762,1763,1764,1765,1766,1767,1768,1769,1770,1771,1772,1773,1774,1775,1776,1777,1778,1779,1780,1781,1782,1783,1784,1785,1786,1787,1788,1789,1790,1791,1792,1793,1794,1795,1796,1797,1798,1799,1800,1801,1802,1803,1804,1805,1806,1807,1808,1809,1810,1811,1812,1813,1814,1815,1816,1817,1818,1819,1820,1821,1822,1823,1824,1825,1826,1827,1828,1829,1830,1831,1832,1833,1834,1835,1836,1837,1838,1839,1840,1841,1842,1843,1844,1845,1846,1847,1848,1849,1850,1851,1852,1853,1854,1855,1856,1857,1858,1859,1860,1861,1862,1863,1864,1865,1866,1867,1868,1869,1870,1871,1872,1873,1874,1875,1876,1877,1878,1879,1880,1881,1882,1883,1884,1885,1886,1887,1888,1889,1890,1891,1892,1893,1894,1895,1896,1897,1898,1899,1900,1901,1902,1903,1904,1905,1906,1907,1908,1909,1910,1911,1912,1913,1914,1915,1916,1917,1918,1919,1920,1921,1922,1923,1924,1925,1926,1927,1928,1929,1930,1931,1932,1933,1934,1935,1936,1937,1938,1939,1940,1941,1942,1943,1944,1945,1946,1947,1948,1949,1950,1951,1952,1953,1954,1955,1956,1957,1958,1959,1960,1961,1962,1963,1964,1965,1966,1967,1968,1969,1970,1971,1972,1973,1974,1975,1976,1977,1978,1979,1980,1981,1982,1983,1984,1985,1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026,2027,2028,2029,2030,2031,2032,2033,2034,2035,2036,2037,2038,2039,2040,2041,2042,2043,2044,2045,2046,2047,2048,2049,2050,2051,2052,2053,2054,2055,2056,2057,2058,2059,2060,2061,2062,2063,2064,2065,2066,2067,2068,2069,2070,2071,2072,2073,2074,2075,2076,2077,2078,2079,2080,2081,2082,2083,2084,2085,2086,2087,2088,2089,2090,2091,2092,2093,2094,2095,2096,2097,2098,2099,2100,2101,2102,2103,2104,2105,2106,2107,2108,2109,2110,2111,2112,2113,2114,2115,2116,2117,2118,2119,2120,2121,2122,2123,2124,2125,2126,2127,2128,2129,2130,2131,2132,2133,2134,2135,2136,2137,2138,2139,2140,2141,2142,2143,2144,2145,2146,2147,2148,2149,2150,2151,2152,2153,2154,2155,2156,2157,2158,2159,2160,2161,2162,2163,2164,2165,2166,2167,2168,2169,2170,2171,2172,2173,2174,2175,2176,2177,2178,2179,2180,2181,2182,2183,2184,2185,2186,2187,2188,2189,2190,2191,2192,2193,2194,2195,2196,2197,2198,2199,2200,2201,2202,2203,2204,2205,2206,2207,2208,2209,2210,2211,2212,2213,2214,2215,2216,2217,2218,2219,2220,2221,2222,2223,2224,2225,2226,2227,2228,2229,2230,2231,2232,2233,2234,2235,2236,2237,2238,2239,2240,2241,2242,2243,2244,2245,2246,2247,2248,2249,2250,2251,2252,2253,2254,2255,2256,2257,2258,2259,2260,2261,2262,2263,2264,2265,2266,2267,2268,2269,2270,2271,2272,2273,2274,2275,2276,2277,2278,2279,2280,2281,2282,2283,2284,2285,2286,2287,2288,2289,2290,2291,2292,2293,2294,2295,2296,2297,2298,2299,2300,2301,2302,2303,2304,2305,2306,2307,2308,2309,2310,2311,2312,2313,2314,2315,2316,2317,2318,2319,2320,2321,2322,2323,2324,2325,2326,2327,2328,2329,2330,2331,2332,2333,2334,2335,2336,2337,2338,2339,2340,2341,2342,2343,2344,2345,2346,2347,2348,2349,2350,2351,2352,2353,2354,2355,2356,2357,2358,2359,2360,2361,2362,2363,2364,2365,2366,2367,2368,2369,2370,2371,2372,2373,2374,2375,2376,2377,2378,2379,2380,2381,2382,2383,2384,2385,2386,2387,2388,2389,2390,2391,2392,2393,2394,2395,2396,2397,2398,2399,2400,2401,2402,2403,2404,2405,2406,2407,2408,2409,2410,2411,2412,2413,2414,2415,2416,2417,2418,2419,2420,2421,2422,2423,2424,2425,2426,2427,2428,2429,2430,2431,2432,2433,2434,2435,2436,2437,2438,2439,2440,2441,2442,2443,2444,2445,2446,2447,2448,2449,2450,2451,2452,2453,2454,2455,2456,2457,2458,2459,2460,2461,2462,2463,2464,2465,2466,2467,2468,2469,2470,2471,2472,2473,2474,2475,2476,2477,2478,2479,2480,2481,2482,2483,2484,2485,2486,2487,2488,2489,2490,2491,2492,2493,2494,2495,2496,2497,2498,2499,2500,2501,2502,2503,2504,2505,2506,2507,2508,2509,2510,2511,2512,2513,2514,2515,2516,2517,2518,2519,2520,2521,2522,2523,2524,2525,2526,2527,2528,2529,2530,2531,2532,2533,2534,2535,2536,2537,2538,2539,2540,2541,2542,2543,2544,2545,2546,2547,2548,2549,2550,2551,2552,2553,2554,2555,2556,2557,2558,2559,2560,2561,2562,2563,2564,2565,2566,2567,2568,2569,2570,2571,2572,2573,2574,2575,2576,2577,2578,2579,2580,2581,2582,2583,2584,2585,2586,2587,2588,2589,2590,2591,2592,2593,2594,2595,2596,2597,2598,2599,2600,2601,2602,2603,2604,2605,2606,2607,2608,2609,2610,2611,2612,2613,2614,2615,2616,2617,2618,2619,2620,2621,2622,2623,2624,2625,2626,2627,2628,2629,2630,2631,2632,2633,2634,2635,2636,2637,2638,2639,2640,2641,2642,2643,2644,2645,2646,2647,2648,2649,2650,2651,2652,2653,2654,2655,2656,2657,2658,2659,2660,2661,2662,2663,2664,2665,2666,2667,2668,2669,2670,2671,2672,2673,2674,2675,2676,2677,2678,2679,2680,2681,2682,2683,2684,2685,2686,2687,2688,2689,2690,2691,2692,2693,2694,2695,2696,2697,2698,2699,2700,2701,2702,2703,2704,2705,2706,2707,2708,2709,2710,2711,2712,2713,2714,2715,2716,2717,2718,2719,2720,2721,2722,2723,2724,2725,2726,2727,2728,2729,2730,2731,2732,2733,2734,2735,2736,2737,2738,2739,2740,2741,2742,2743,2744,2745,2746,2747,2748,2749,2750,2751,2752,2753,2754,2755,2756,2757,2758,2759,2760,2761,2762,2763,2764,2765,2766,2767,2768,2769,2770,2771,2772,2773,2774,2775,2776,2777,2778,2779,2780,2781,2782,2783,2784,2785,2786,2787,2788,2789,2790,2791,2792,2793,2794,2795,2796,2797,2798,2799,2800,2801,2802,2803,2804,2805,2806,2807,2808,2809,2810,2811,2812,2813,2814,2815,2816,2817,2818,2819,2820,2821,2822,2823,2824,2825,2826,2827,2828,2829,2830,2831,2832,2833,2834,2835,2836,2837,2838,2839,2840,2841,2842,2843,2844,2845,2846,2847,2848,2849,2850,2851,2852,2853,2854,2855,2856,2857,2858,2859,2860,2861,2862,2863,2864,2865,2866,2867,2868,2869,2870,2871,2872,2873,2874,2875,2876,2877,2878,2879,2880,2881,2882,2883,2884,2885,2886,2887,2888,2889,2890,2891,2892,2893,2894,2895,2896,2897,2898,2899,2900,2901,2902,2903,2904,2905,2906,2907,2908,2909,2910,2911,2912,2913,2914,2915,2916,2917,2918,2919,2920,2921,2922,2923,2924,2925,2926,2927,2928,2929,2930,2931,2932,2933,2934,2935,2936,2937,2938,2939,2940,2941,2942,2943,2944,2945,2946,2947,2948,2949,2950,2951,2952,2953,2954,2955,2956,2957,2958,2959,2960,2961,2962,2963,2964,2965,2966,2967,2968,2969,2970,2971,2972,2973,2974,2975,2976,2977,2978,2979,2980,2981,2982,2983,2984,2985,2986,2987,2988,2989,2990,2991,2992,2993,2994,2995,2996,2997,2998,2999,3000];
+
+// 학습할 단어 ID는 sign_language_homepage.html에서 localStorage('current_learning_ids')로 전달받음
+// (백엔드 DB가 단일 진실원 — 정적 1,700개 ID 배열은 폐기)
+let currentLearningIds = [];
+let currentLearningWords = [];   // gcs_path 등 풀 오브젝트 캐시 (인덱스 = currentLearningIds 1:1 대응)
+const currentDay = parseInt(localStorage.getItem('current_learning_day')) || 1;
+try {
+  const _rawIds   = localStorage.getItem('current_learning_ids');
+  const _rawWords = localStorage.getItem('current_learning_words');
+  if (_rawIds)   currentLearningIds   = JSON.parse(_rawIds).filter(id => id != null);
+  if (_rawWords) currentLearningWords = JSON.parse(_rawWords) || [];
+} catch (_e) { currentLearningIds = []; currentLearningWords = []; }
+console.log('📥 [교육 화면] 홈 화면에서 넘겨받은 데이터:', { currentLearningIds, currentLearningWords });
+
+const groupsEl   = document.getElementById("groups");
+const searchInput= document.getElementById("searchInput");
+const jumpInput  = document.getElementById("jumpInput");
+
+let activePlayers = []; // 현재 렌더링 중인 플레이어들
+
+// localStorage에서 받은 5개 단어 ID 중 idx번째를 4자리 zero-pad 문자열로 반환
+// (day 인자는 기존 호출 시그니처 유지를 위해 받지만 사용하지 않음)
+function getWordId(day, idx){
+  const id = currentLearningIds[idx];
+  return id != null ? String(id).padStart(4, "0") : null;
+}
+
+/* 아바타 카드 DOM 생성 */
+function buildAvatarCard(num, wordId){
+  const card = document.createElement('div');
+  card.className = 'word-card';
+  card.innerHTML = `
+    <div class="avatar-stage">
+      <canvas></canvas>
+      <div class="avatar-loading" id="av-loading-${wordId}">
+        <div class="av-spinner"></div>
+        <span>로딩 중…</span>
+      </div>
+      <div class="avatar-controls">
+        <button class="av-btn is-playing" id="av-play-${wordId}" title="재생/정지">⏸</button>
+        <button class="av-btn" id="av-replay-${wordId}" title="처음부터">↺</button>
+        <div class="av-progress">
+          <div class="av-progress-bar" id="av-prog-${wordId}"></div>
+        </div>
+        <span class="av-frame" id="av-frame-${wordId}">00/00</span>
+      </div>
+    </div>
+    <div class="word-info">
+      <div class="word-label-line">
+        <span class="word-num-label">학습 단어 :</span>
+        <span class="word-name skeleton" id="av-name-${wordId}">　　　　</span>
+      </div>
+      <div class="word-frames" id="av-frames-${wordId}"></div>
+    </div>
+  `;
+  return card;
+}
+
+/* GCS에서 데이터 로드 후 플레이어 초기화 */
+async function initCard(card, wordId){
+  const loadingEl= card.querySelector(`#av-loading-${wordId}`);
+  const playBtn  = card.querySelector(`#av-play-${wordId}`);
+  const replayBtn= card.querySelector(`#av-replay-${wordId}`);
+  const progEl   = card.querySelector(`#av-prog-${wordId}`);
+  const frameEl  = card.querySelector(`#av-frame-${wordId}`);
+  const nameEl   = card.querySelector(`#av-name-${wordId}`);
+  const framesEl = card.querySelector(`#av-frames-${wordId}`);
+  const canvas   = card.querySelector('canvas');
+
+  try {
+    const res = await fetch(`${GCS}/WORD${wordId}.json`);
+    if(!res.ok) throw new Error('404');
+    const data = await res.json();
+
+    loadingEl.style.display = 'none';
+
+    // 단어 이름
+    nameEl.textContent = data.word_name || `WORD${wordId}`;
+    nameEl.classList.remove('skeleton');
+    framesEl.textContent = `${data.frames?.length ?? 0}프레임 · 3D 수어`;
+
+    // 플레이어 생성
+    const player = new AvatarPlayer(canvas, progEl, frameEl, playBtn);
+    player.load(data);
+    activePlayers.push(player);
+
+    playBtn.addEventListener('click', ()=>player.toggle());
+    replayBtn.addEventListener('click', ()=>player.replay());
+
+  } catch(e){
+    loadingEl.innerHTML = '<span style="color:#f55c8a;font-size:11px">⚠ 로드 실패</span>';
+    nameEl.textContent = `WORD${wordId}`;
+    nameEl.classList.remove('skeleton');
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   단어 학습 오버레이 (1개씩 보기)
+   ═══════════════════════════════════════════════ */
+let wvDay = 1;
+let wvIdx = 0;          // 현재 단어 인덱스 (0~4)
+let wvPlayer = null;    // 현재 AvatarPlayer
+
+const wvViewer   = document.getElementById('wordViewer');
+const wvBack     = document.getElementById('wvBack');
+const wvTitle    = document.getElementById('wvTitle');
+const wvProgInfo = document.getElementById('wvProgressInfo');
+const wvDots     = document.getElementById('wvDots');
+const wvCanvas   = document.getElementById('wvCanvas');
+const wvLoading  = document.getElementById('wvLoading');
+const wvPlayBtn  = document.getElementById('wvPlayBtn');
+const wvReplayBtn= document.getElementById('wvReplayBtn');
+const wvBar      = document.getElementById('wvBar');
+const wvFrame    = document.getElementById('wvFrame');
+const wvWordLabel= document.getElementById('wvWordLabel');
+const wvWordName = document.getElementById('wvWordName');
+const wvWordFrames=document.getElementById('wvWordFrames');
+const wvDescMeaning=document.getElementById('wvDescMeaning');
+const wvDescHow    =document.getElementById('wvDescHow');
+const wvPrev     = document.getElementById('wvPrev');
+const wvNext     = document.getElementById('wvNext');
+const wvSpeedBtns = document.getElementById('wvSpeedBtns');
+
+// 속도 단계 정의: 1=매우느림(2fps), 2=느림(4fps), 3=보통(6fps), 4=빠름(10fps), 5=매우빠름(16fps)
+const SPEED_STEPS = [2, 4, 6, 10, 16];
+let currentSpeed = 6; // 기본값 3단계
+
+function applySpeed(step){
+  const idx = step - 1;
+  currentSpeed = SPEED_STEPS[idx];
+  // 버튼 active 상태 갱신
+  wvSpeedBtns.querySelectorAll('.wv-spd-btn').forEach(btn => {
+    btn.classList.toggle('active', Number(btn.dataset.step) === step);
+  });
+  if(wvPlayer) wvPlayer.setSpeed(currentSpeed);
+}
+
+wvSpeedBtns.addEventListener('click', e => {
+  const btn = e.target.closest('.wv-spd-btn');
+  if(btn) applySpeed(Number(btn.dataset.step));
+});
+
+// 오버레이 열기
+function openWordViewer(day){
+  wvDay = day;
+  wvIdx = 0;
+  _sessionLearned.clear();  // 오버레이 재진입 시 세션 초기화
+  wvViewer.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  wvTitle.textContent = `${day}일차 학습`;
+
+  // 속도 버튼 초기화 (기본값 = 3단계, 6fps)
+  applySpeed(3);
+
+  // 도트 생성
+  wvDots.innerHTML = '';
+  for(let i=0;i<wordsPerDay;i++){
+    const dot = document.createElement('div');
+    dot.className = 'wv-dot';
+    dot.dataset.i = i;
+    dot.addEventListener('click', ()=>{
+      if(i!==wvIdx){
+        _recordLearned(parseInt(getWordId(wvDay, wvIdx)));  // 현재 단어 기록 후 점프
+        loadWordAt(i);
+      }
+    });
+    wvDots.appendChild(dot);
+  }
+  loadWordAt(0);
+}
+
+// 오버레이 닫기
+function closeWordViewer(){
+  _recordLearned(parseInt(getWordId(wvDay, wvIdx)));  // 닫기 직전 현재 단어 기록
+  wvViewer.classList.remove('open');
+  document.body.style.overflow = '';
+  if(wvPlayer){ wvPlayer.destroy(); wvPlayer=null; }
+  // 닫은 후 빈 화면이 되지 않도록 목차 보장 (모드 A 학습 종료 후 모드 B로 자연 전환)
+  if (groupsEl.childElementCount === 0) createGroups();
+}
+
+// 특정 인덱스 단어 로드
+async function loadWordAt(idx){
+  wvIdx = idx;
+
+  // 기존 플레이어 정리
+  if(wvPlayer){ wvPlayer.destroy(); wvPlayer=null; }
+
+  // UI 초기화
+  wvLoading.style.display = 'flex';
+  wvWordName.textContent = '　　　　';
+  wvWordName.classList.add('skeleton');
+  wvWordFrames.textContent = '';
+  wvWordLabel.textContent = `학습 단어 :`;
+  wvBar.style.width = '0%';
+  wvFrame.textContent = '00/00';
+  wvPlayBtn.textContent = '⏸';
+  wvPlayBtn.classList.add('is-playing');
+  wvDescHow.textContent = '';
+  wvDescHow.classList.add('skeleton');
+
+  // 진행 도트 업데이트
+  [...wvDots.children].forEach((d,i)=>{
+    d.className = 'wv-dot' + (i<idx?' done':i===idx?' active':'');
+  });
+
+  // 상단 진행 표시
+  wvProgInfo.textContent = `${idx+1} / ${wordsPerDay}`;
+
+  // 이전/다음 버튼 상태
+  wvPrev.disabled = idx === 0;
+  const isLast = idx === wordsPerDay - 1;
+  wvNext.textContent = isLast ? '완료 ✓' : '다음 →';
+  wvNext.className   = 'wv-nav-btn ' + (isLast ? 'finish' : 'next');
+
+  // GCS 데이터 로드 — 백엔드가 알려준 gcs_path를 우선 사용, 없으면 WORD{id:04d}.json 폴백
+  const wordId = getWordId(wvDay, idx);
+  const wordInfo = currentLearningWords[idx];
+  const gcsUrl = wordInfo?.gcs_path
+    ? `${GCS}/${wordInfo.gcs_path}`
+    : `${GCS}/WORD${wordId}.json`;
+  try {
+    const res = await fetch(gcsUrl);
+    if(!res.ok) throw new Error('404');
+    const data = await res.json();
+
+    wvLoading.style.display = 'none';
+    wvWordName.textContent = data.word_name || `WORD${wordId}`;
+    wvWordName.classList.remove('skeleton');
+    wvWordFrames.textContent = `${data.frames?.length ?? 0}프레임 · 3D 수어`;
+
+    // dictionary.html 패턴: 백엔드 description을 wvDescMeaning에 표시 (prefetch 우선, 없으면 GET /words/{id})
+    const wInfo = currentLearningWords[idx];
+    if (wInfo && wInfo.description) {
+      wvDescMeaning.textContent = wInfo.description;
+    } else if (wInfo && wInfo.category && wInfo.category !== 'null') {
+      wvDescMeaning.textContent = wInfo.category;
+    } else {
+      wvDescMeaning.textContent = `한국 수어에서 '${data.word_name || `WORD${wordId}`}'을(를) 나타내는 표현입니다.`;
+      const intId = parseInt(wordId);
+      if (intId) {
+        fetch(`${API_BASE}/words/${intId}`, { headers: NGROK_H })
+          .then(r => r.ok ? r.json() : null)
+          .then(d => {
+            if (d && d.description) wvDescMeaning.textContent = d.description;
+            else if (d && d.category && d.category !== 'null') wvDescMeaning.textContent = d.category;
+          })
+          .catch(()=>{});
+      }
+    }
+
+    // 플레이어 생성 및 로드
+    wvPlayer = new AvatarPlayer(wvCanvas, wvBar, wvPlayBtn, wvFrame);
+    wvPlayer.setSpeed(currentSpeed);
+    wvPlayer.load(data);
+    _allPlayers.add(wvPlayer);
+    _ensureLoop();
+
+    wvPlayBtn.onclick  = ()=> wvPlayer.toggle();
+    wvReplayBtn.onclick= ()=> wvPlayer.replay();
+
+    // Claude API로 단어 설명 + 수어 방법 생성 (프레임 동작 분석 포함)
+    fetchWordDescription(data.word_name || `WORD${wordId}`, wordId, data.frames);
+
+  } catch(e){
+    wvLoading.innerHTML = '<span style="color:#f55c8a">⚠ 데이터를 불러올 수 없습니다</span>';
+    wvWordName.textContent = `WORD${wordId}`;
+    wvWordName.classList.remove('skeleton');
+    wvDescHow.textContent = '수어 방법 설명을 생성할 수 없습니다.';
+    wvDescHow.classList.remove('skeleton');
+  }
+}
+
+// 단어 설명 캐시 (같은 단어 재로드 시 API 재호출 방지)
+const descCache = {};
+
+// dictionary.html과 동일한 좌표 분석 기반 수어 동작 설명 생성기
+// (백엔드 단어 데이터 하드코딩이 아닌 순수 클라이언트 헬퍼 — wvDescHow에 표시)
+function generateSignDescription(wordName, frames){
+  if(!frames || frames.length < 2) return '수어 동작 데이터를 분석할 수 없습니다.';
+  const sample = Math.min(frames.length, 24);
+  const step = Math.floor(frames.length / sample);
+  const samp = Array.from({length: sample}, (_, i) => frames[i * step]);
+  const center = hand => {
+    if(!hand || hand.length < 5) return null;
+    const v = hand.filter(p => p && (p[0]||p[1]));
+    if(!v.length) return null;
+    return { x: v.reduce((s,p)=>s+p[0],0)/v.length, y: v.reduce((s,p)=>s+p[1],0)/v.length };
+  };
+  const spread = hand => {
+    if(!hand || hand.length < 21) return 0;
+    const w = hand[0];
+    return [4,8,12,16,20].map(i => hand[i] ? Math.hypot(hand[i][0]-w[0], hand[i][1]-w[1]) : 0).reduce((a,b)=>a+b,0) / 5;
+  };
+  const lCs = samp.map(f=>center(f.left_hand)).filter(Boolean);
+  const rCs = samp.map(f=>center(f.right_hand)).filter(Boolean);
+  const lSp = samp.map(f=>spread(f.left_hand));
+  const rSp = samp.map(f=>spread(f.right_hand));
+  const useL = lCs.length > sample * 0.35;
+  const useR = rCs.length > sample * 0.35;
+  const avgSp = arr => { const v = arr.filter(x=>x>0); return v.length ? v.reduce((a,b)=>a+b,0)/v.length : 0; };
+  const motion = cs => {
+    if(cs.length < 4) return null;
+    const h = Math.floor(cs.length/2);
+    const avg = a => ({ x: a.reduce((s,c)=>s+c.x,0)/a.length, y: a.reduce((s,c)=>s+c.y,0)/a.length });
+    const fa = avg(cs.slice(0,h)), ba = avg(cs.slice(h));
+    return { dx: ba.x - fa.x, dy: ba.y - fa.y };
+  };
+  const amplitude = cs => {
+    if(cs.length < 4) return 0;
+    const ys = cs.map(c=>c.y);
+    return Math.max(...ys) - Math.min(...ys);
+  };
+  const spreadLabel = v => {
+    if(v < 0.06) return '주먹을 쥐고';
+    if(v < 0.10) return '손가락을 가볍게 구부려';
+    if(v < 0.15) return '손가락을 모아 편 채로';
+    return '손가락을 활짝 펼쳐';
+  };
+  const isMoving = (mv, cs) => {
+    if(!mv) return false;
+    const amp = amplitude(cs);
+    return Math.abs(mv.dx) > 0.025 || Math.abs(mv.dy) > 0.025 || amp > 0.04;
+  };
+  const dirLabel = (mv, cs) => {
+    if(!mv) return null;
+    const {dx, dy} = mv;
+    const amp = amplitude(cs);
+    const parts = [];
+    if(Math.abs(dy) > 0.025) parts.push(dy < 0 ? '위로' : '아래로');
+    if(Math.abs(dx) > 0.025) parts.push(dx < 0 ? '왼쪽으로' : '오른쪽으로');
+    if(!parts.length){ if(amp > 0.04) return '상하로 반복해서 흔들며'; return null; }
+    return parts.join(' ') + ' 움직이며';
+  };
+  const lM = motion(lCs), rM = motion(rCs);
+  const lMoving = isMoving(lM, lCs);
+  const rMoving = isMoving(rM, rCs);
+  const parts = [];
+  if(useR && useL){
+    const ls = avgSp(lSp), rs = avgSp(rSp);
+    if(rMoving && lMoving){
+      const symSp = Math.abs(ls - rs) < 0.04;
+      if(symSp){ parts.push(`양손을 ${spreadLabel(rs)}`); const rDir = dirLabel(rM, rCs); if(rDir) parts.push(rDir); }
+      else { const rDir = dirLabel(rM, rCs); const lDir = dirLabel(lM, lCs); if(rDir) parts.push(`오른손을 ${spreadLabel(rs)} ${rDir}`); if(lDir) parts.push(`왼손을 ${spreadLabel(ls)} ${lDir}`); }
+    } else if(rMoving){ parts.push(`오른손을 ${spreadLabel(rs)}`); const rDir = dirLabel(rM, rCs); if(rDir) parts.push(rDir); }
+    else if(lMoving){ parts.push(`왼손을 ${spreadLabel(ls)}`); const lDir = dirLabel(lM, lCs); if(lDir) parts.push(lDir); }
+    else { const symSp = Math.abs(ls - rs) < 0.04; if(symSp) parts.push(`양손을 ${spreadLabel(rs)} 고정된 자세로`); else parts.push(`오른손은 ${spreadLabel(rs)}, 왼손은 ${spreadLabel(ls)} 고정된 자세로`); }
+    parts.push('수어를 표현합니다.');
+  } else if(useR){
+    parts.push(`오른손을 ${spreadLabel(avgSp(rSp))}`);
+    const rDir = dirLabel(rM, rCs); if(rDir) parts.push(rDir);
+    parts.push('수어를 표현합니다.');
+  } else if(useL){
+    parts.push(`왼손을 ${spreadLabel(avgSp(lSp))}`);
+    const lDir = dirLabel(lM, lCs); if(lDir) parts.push(lDir);
+    parts.push('수어를 표현합니다.');
+  } else {
+    return '손 동작 정보를 분석하기 어렵습니다.';
+  }
+  return parts.join(' ');
+}
+
+// dictionary.html 패턴: wvDescHow에 generateSignDescription 결과 표시 (단어 의미는 wvDescMeaning에서 별도 처리)
+function fetchWordDescription(wordName, wordId, frames){
+  const cacheKey = wordId || wordName;
+  if(descCache[cacheKey]){
+    wvDescHow.textContent = descCache[cacheKey];
+    wvDescHow.classList.remove('skeleton');
+    return;
+  }
+  const how = generateSignDescription(wordName, frames);
+  descCache[cacheKey] = how;
+  wvDescHow.textContent = how;
+  wvDescHow.classList.remove('skeleton');
+}
+
+
+// 학습 기록 저장 유틸 (score 100 = 단어 학습 완료)
+async function saveLearningLog(wordId, score) {
+  const userId = localStorage.getItem('user_id');
+  if (!userId || !wordId) return;
+  try {
+    await fetch(`${API_BASE}/learning/log`, {
+      method: 'POST',
+      headers: NGROK_H,
+      // is_correct: true 고정 — 학습(study)은 항상 성공으로 기록, 화면 정답률은 quiz_stats localStorage만 사용
+      body: JSON.stringify({ user_id: parseInt(userId), word_id: parseInt(wordId), score, is_correct: true, mode: 'study' })
+    });
+  } catch (e) { /* 로깅 실패는 학습 흐름에 영향 주지 않도록 무시 */ }
+}
+
+// 세션 내 중복 기록 방지용 Set (openWordViewer 호출 시 초기화)
+const _sessionLearned = new Set();
+
+// 단어 1회 학습 기록 + 홈페이지 daily_done 실시간 동기화
+function _recordLearned(wordId) {
+  if (!wordId || _sessionLearned.has(String(wordId))) return;
+  _sessionLearned.add(String(wordId));
+  saveLearningLog(wordId, 100);
+
+  // 홈페이지 _dailyKey와 동일한 키 포맷으로 localStorage 기록
+  const userId = localStorage.getItem('user_id');
+  if (!userId) return;
+  const d = new Date();
+  const ymd = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+  const key = `daily_done_${userId}_${ymd}`;
+  const done = new Set(JSON.parse(localStorage.getItem(key) || '[]'));
+  done.add(String(wordId));
+  localStorage.setItem(key, JSON.stringify([...done]));
+}
+
+// 이전 / 다음
+wvPrev.addEventListener('click', ()=>{
+  if(wvIdx>0){
+    _recordLearned(parseInt(getWordId(wvDay, wvIdx)));  // 현재 단어 기록 후 이전으로
+    loadWordAt(wvIdx-1);
+  }
+});
+wvNext.addEventListener('click', ()=>{
+  const idStr = getWordId(wvDay, wvIdx);
+  if (idStr) _recordLearned(parseInt(idStr));  // saveLearningLog 대신 _recordLearned (중복 방지 포함)
+
+  if(wvIdx < wordsPerDay-1){ loadWordAt(wvIdx+1); }
+  else {
+    // 모드 A 자동 학습 완료 → localStorage 정리하여 다음 진입 시 모드 B(목차)로 자연 전환
+    localStorage.removeItem('current_learning_ids');
+    localStorage.removeItem('current_learning_words');
+    closeWordViewer();  // closeWordViewer 내부에서도 _recordLearned 호출하나 Set으로 중복 방지됨
+  }
+});
+wvBack.addEventListener('click', () => {
+  closeWordViewer();
+  // 홈에서 word_id 파라미터로 진입한 경우 → 닫기 클릭 시 홈으로 복귀하여 통계 즉시 갱신
+  if (new URLSearchParams(location.search).has('word_id')) {
+    window.location.href = 'sign_language_homepage.html';
+  }
+});
+// ESC 닫기
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape' && wvViewer.classList.contains('open')) closeWordViewer();
+  if(e.key==='ArrowRight' && wvViewer.classList.contains('open') && wvIdx<wordsPerDay-1){
+    _recordLearned(parseInt(getWordId(wvDay, wvIdx)));
+    loadWordAt(wvIdx+1);
+  }
+  if(e.key==='ArrowLeft' && wvViewer.classList.contains('open') && wvIdx>0){
+    _recordLearned(parseInt(getWordId(wvDay, wvIdx)));
+    loadWordAt(wvIdx-1);
+  }
+  const tag = document.activeElement?.tagName;
+  const isTyping = tag === 'INPUT' || tag === 'TEXTAREA';
+  if(e.code==='Space' && wvViewer.classList.contains('open') && !isTyping){ e.preventDefault(); if(wvPlayer) wvPlayer.toggle(); }
+  if((e.key==='r'||e.key==='R') && wvViewer.classList.contains('open') && !isTyping){ if(wvPlayer) wvPlayer.replay(); }
+});
+
+/* N일차 단어 로드 — /daily/curriculum/{day} 우선, 실패 시 로컬 WORD_ORDER fallback */
+async function renderLesson(panel, day){
+  try {
+    // 1순위: 백엔드 커리큘럼 API (서버 재시작 후 활성화)
+    const res = await fetch(`${API_BASE}/daily/curriculum/${day}`, { headers: NGROK_H });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const words = await res.json();
+    if (words.length === 0) { alert('해당 일차의 단어가 없습니다.'); return; }
+    currentLearningIds   = words.map(w => w.word_id);
+    currentLearningWords = words;
+    localStorage.setItem('current_learning_ids',   JSON.stringify(currentLearningIds));
+    localStorage.setItem('current_learning_words',  JSON.stringify(currentLearningWords));
+    localStorage.setItem('current_learning_day',    JSON.stringify(day));
+    openWordViewer(day);
+    loadWordAt(0);
+  } catch (_) {
+    // 2순위: 서버 구버전 대응 — 로컬 WORD_ORDER + GET /words/{id} 병렬 호출
+    try {
+      const ids = WORD_ORDER.slice((day - 1) * wordsPerDay, day * wordsPerDay);
+      if (ids.length === 0) { alert('해당 일차의 단어가 없습니다.'); return; }
+      const results = await Promise.all(
+        ids.map(id =>
+          fetch(`${API_BASE}/words/${id}`, { headers: NGROK_H })
+            .then(r => r.ok ? r.json() : null).catch(() => null)
+        )
+      );
+      const words = results.filter(w => w !== null);
+      if (words.length === 0) { alert('단어 정보를 불러오지 못했습니다.'); return; }
+      currentLearningIds   = words.map(w => w.word_id);
+      currentLearningWords = words;
+      localStorage.setItem('current_learning_ids',   JSON.stringify(currentLearningIds));
+      localStorage.setItem('current_learning_words',  JSON.stringify(currentLearningWords));
+      localStorage.setItem('current_learning_day',    JSON.stringify(day));
+      openWordViewer(day);
+      loadWordAt(0);
+    } catch (e) {
+      console.error('[renderLesson]', e);
+      alert('단어 정보를 불러오지 못했습니다.');
+    }
+  }
+}
+
+function createGroups(){
+  for(let start=1; start<=totalDays; start+=10){
+    const end = Math.min(start+9, totalDays);
+    const groupCard = document.createElement('div');
+    groupCard.className = 'group-card';
+    groupCard.dataset.start = start;
+    groupCard.dataset.end   = end;
+    groupCard.dataset.label = `${start}일차~${end}일차`;
+
+    const header = document.createElement('button');
+    header.className = 'group-header';
+    header.type = 'button';
+    header.innerHTML = `
+      <div class="group-left">
+        <h2>${start}일차~${end}일차</h2>
+        <p>${start}일차부터 ${end}일차까지의 학습 목록입니다. 클릭하면 하위 일차가 펼쳐집니다.</p>
+      </div>
+      <div class="group-right">
+        <div class="group-count">10일차</div>
+        <div class="group-arrow">⌃</div>
+      </div>
+    `;
+
+    const body = document.createElement('div');
+    body.className = 'group-body';
+    const dayGrid = document.createElement('div');
+    dayGrid.className = 'day-grid';
+    const lessonPanel = document.createElement('div');
+    lessonPanel.className = 'lesson-panel';
+
+    for(let day=start; day<=end; day++){
+      const btn = document.createElement('button');
+      btn.className = 'day-button';
+      btn.type = 'button';
+      btn.innerHTML = `
+        <div class="mini">학습 단위</div>
+        <div class="title">${day}일차</div>
+        <div class="meta">단어 5개<br />생활 중심 표현 학습</div>
+      `;
+      btn.addEventListener('click', ()=>{
+        dayGrid.querySelectorAll('.day-button').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        renderLesson(lessonPanel, day);
+      });
+      dayGrid.appendChild(btn);
+    }
+
+    body.appendChild(dayGrid);
+    body.appendChild(lessonPanel);
+    header.addEventListener('click', ()=>groupCard.classList.toggle('open'));
+    groupCard.appendChild(header);
+    groupCard.appendChild(body);
+    groupsEl.appendChild(groupCard);
+  }
+}
+
+function filterGroups(){
+  const q = searchInput.value.trim();
+  document.querySelectorAll('.group-card').forEach(c=>{
+    if(!q){c.style.display='';return;}
+    const hit = c.dataset.label.includes(q)||c.dataset.start.includes(q)||c.dataset.end.includes(q);
+    c.style.display = hit?'':'none';
+  });
+}
+
+function openDay(day){
+  if(!day||day<1||day>600) return;
+  const gs = Math.floor((day-1)/10)*10+1;
+  const card = document.querySelector(`.group-card[data-start="${gs}"]`);
+  if(!card) return;
+  document.querySelectorAll('.group-card').forEach(c=>c.classList.remove('open'));
+  card.classList.add('open');
+  card.scrollIntoView({behavior:'smooth',block:'start'});
+  setTimeout(()=>{
+    const target=[...card.querySelectorAll('.day-button')].find(b=>b.querySelector('.title').textContent===`${day}일차`);
+    if(target) target.click();
+  }, 250);
+}
+
+searchInput.addEventListener('input', filterGroups);
+jumpInput.addEventListener('change', ()=>openDay(Number(jumpInput.value)));
+jumpInput.addEventListener('keydown', e=>{if(e.key==='Enter')openDay(Number(jumpInput.value));});
+
+// 투 트랙 모드 결정:
+// ─ 모드 A (자동 학습): localStorage.current_learning_ids 가 있으면 5개 단어 자동 prefetch + 오버레이 자동 오픈 (목차 숨김)
+// ─ 모드 B (목차 탐색): URL ?mode=index 또는 localStorage 비었으면 createGroups()로 1~340일차 목차 동적 생성
+const _params = new URLSearchParams(window.location.search);
+const _forceIndex = _params.get('mode') === 'index';
+
+if (!_forceIndex && currentLearningIds.length > 0) {
+  // ── 모드 A: 자동 학습 ──
+  (async function autoOpenFromLocalStorage(){
+    // 1) 홈 화면이 current_learning_words를 미리 저장했으면 재호출 없이 그대로 사용
+    //    그렇지 않으면 /words/{id}를 ID별 병렬 호출 (실패 시 null 유지 — 인덱스 정렬 보존)
+    if (currentLearningWords.length !== currentLearningIds.length) {
+      const fetched = await Promise.all(
+        currentLearningIds.map(id =>
+          fetch(`${API_BASE}/words/${id}`, { headers: NGROK_H })
+            .then(r => r.ok ? r.json() : null)
+            .catch(() => null)
+        )
+      );
+      currentLearningWords = fetched;   // null 포함 유지 — currentLearningIds와 1:1 인덱스 정렬
+    }
+
+    // 2) API 호출이 모두 실패해도 ID가 유효하면 GCS 폴백으로 단어 뷰어를 열어야 한다
+    //    목차(createGroups)로 빠지면 사용자가 1일차를 클릭해 DB 첫 단어가 뜨는 오류 발생
+    const qWordId = parseInt(_params.get('word_id'));
+    let startIdx = 0;
+    if (qWordId) {
+      const pos = currentLearningIds.findIndex(id => Number(id) === qWordId);
+      if (pos >= 0) startIdx = pos;
+    }
+    openWordViewer(currentDay);
+    loadWordAt(startIdx);
+  })();
+} else {
+  // ── 모드 B: 목차 탐색 (totalDays=340 기준 10일씩 그룹 동적 생성) ──
+  createGroups();
+  // 사용자 진도 일차 자동 이동 — /daily/{userId} API로 실제 현재 일차 확인 후 해당 버튼 자동 클릭
+  (async function autoSelectCurrentDay() {
+    let targetDay = currentDay; // localStorage 기본값
+    try {
+      const uid = localStorage.getItem('user_id');
+      if (uid) {
+        const r = await fetch(`${API_BASE}/daily/${uid}`, { headers: NGROK_H });
+        const words = await r.json();
+        if (Array.isArray(words) && words.length > 0 && words[0].day_number) {
+          targetDay = words[0].day_number;
+          localStorage.setItem('current_learning_day', JSON.stringify(targetDay));
+        }
+      }
+    } catch (_) {}
+    if (targetDay > 1) {
+      const allBtns = document.querySelectorAll('.day-button');
+      const target = [...allBtns].find(b => {
+        const t = b.querySelector('.title');
+        return t && t.textContent === `${targetDay}일차`;
+      });
+      if (target) target.click();
+    }
+  })();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  사이드바 위젯 부트스트랩 — 사용자 이름 / 등급 칩 / 진행률
+//  (홈페이지 sign_language_homepage.html의 _getUserRank·
+//   _updateRankChip·_updateRankBanner 로직을 동일하게 재현)
+// ═══════════════════════════════════════════════════════════════
+(function initSidebarWidgets() {
+  // 사용자 이름
+  const nameEl = document.getElementById('userName');
+  if (nameEl) {
+    const stored = localStorage.getItem('user_name');
+    if (stored) nameEl.textContent = stored;
+  }
+
+  const RANKS = [
+    { emoji: '🌱', name: '수어 입문자', minTotal: 0,  minAcc: 0   },
+    { emoji: '🥉', name: '수어 도전자', minTotal: 5,  minAcc: 40  },
+    { emoji: '🥈', name: '수어 학습자', minTotal: 10, minAcc: 60  },
+    { emoji: '🥇', name: '수어 마스터', minTotal: 15, minAcc: 80  },
+    { emoji: '💎', name: '수어 챔피언', minTotal: 20, minAcc: 95  },
+    { emoji: '👑', name: '수어 천재',   minTotal: 20, minAcc: 100 },
+  ];
+
+  function _readQuizStats() {
+    const qs = JSON.parse(localStorage.getItem('quiz_stats') || '{"correct":0,"total":0}');
+    const total = qs.total || 0;
+    const accuracy = total > 0 ? Math.round(qs.correct / qs.total * 100) : 0;
+    return { total, accuracy };
+  }
+
+  function _currentRankIdx() {
+    const { total, accuracy } = _readQuizStats();
+    let idx = 0;
+    for (let i = RANKS.length - 1; i >= 0; i--) {
+      if (total >= RANKS[i].minTotal && accuracy >= RANKS[i].minAcc) { idx = i; break; }
+    }
+    return idx;
+  }
+
+  // 등급 칩
+  const chip = document.getElementById('userRankChip');
+  if (chip) {
+    const r = RANKS[_currentRankIdx()];
+    chip.textContent = `${r.emoji} ${r.name}`;
+  }
+
+  // 진행률 막대
+  const fillEl = document.getElementById('promoProgressFill');
+  const textEl = document.getElementById('promoProgressNext');
+  if (fillEl) {
+    const idx = _currentRankIdx();
+    const next = RANKS[idx + 1];
+    if (!next) {
+      fillEl.style.width = '100%';
+      if (textEl) textEl.textContent = '🏆 모든 등급 달성!';
+    } else {
+      const { total, accuracy } = _readQuizStats();
+      const totalPct = next.minTotal > 0 ? Math.min(100, Math.round(total / next.minTotal * 100)) : 100;
+      const accPct   = next.minAcc   > 0 ? Math.min(100, Math.round(accuracy / next.minAcc * 100)) : 100;
+      const pct = Math.min(totalPct, accPct);
+      fillEl.style.width = pct + '%';
+      if (textEl) textEl.textContent = `다음 등급까지 ${100 - pct}% 남았어요`;
+    }
+  }
+})();
+</script>
+<script src="chatbot-overlay.js"></script>
+</body>
+</html>

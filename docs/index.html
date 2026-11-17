@@ -1,0 +1,1648 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SORI — AI 수어 학습 플랫폼</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    /* ═══════════════════════════════════════════════
+       디자인 토큰 — look.png 참고 파스텔 대시보드 스타일
+       ═══════════════════════════════════════════════ */
+    :root {
+      /* 배경 / 서피스 */
+      --bg:           #f3eee5;
+      --sidebar-bg:   #e6e3f1;
+      --card-white:   #ffffff;
+
+      /* 파스텔 카드 색상 */
+      --card-mint:    #c9e6d4;
+      --card-peach:   #fad6c0;
+      --card-yellow:  #fdedb0;
+      --card-lavender:#d9d1ee;
+      --card-pink:    #fcd4d8;
+      --card-coral:   #f4b8a3;
+      --card-cream:   #f5ecd9;
+
+      /* 텍스트 */
+      --text-dark:    #1a1814;
+      --text-mid:     #5a5048;
+      --text-muted:   #8a8278;
+      --text-on-soft: rgba(40,30,20,0.65);
+
+      /* 액션 */
+      --primary:      #1a1814;       /* 다크 액션 (검색 버튼 등) */
+      --accent:       #6a5cd6;       /* 서브 포인트 */
+
+      /* 테두리·그림자 */
+      --border:       #e8e1d4;
+      --shadow-card:  0 2px 8px rgba(50,40,20,0.04);
+      --shadow-hover: 0 8px 24px rgba(50,40,20,0.10);
+
+      /* 반지름 */
+      --r-sm: 10px;
+      --r-md: 14px;
+      --r-lg: 18px;
+      --r-xl: 24px;
+
+      /* 트랜지션 */
+      --transition: all 0.22s cubic-bezier(0.34, 1.42, 0.64, 1);
+      --transition-plain: all 0.18s ease;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text-dark);
+      height: 100vh;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ═══════════ 3 컬럼 앱 셸 — 풀 와이드 웹 형식 ═══════════ */
+    .app-shell {
+      display: grid;
+      grid-template-columns: 260px 1fr 360px;
+      gap: 24px;
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      padding: 28px 40px;
+      height: 100vh;
+      align-items: stretch;
+    }
+
+    /* ═══════════ 좌측 사이드바 ═══════════ */
+    .sidebar {
+      background: var(--sidebar-bg);
+      border-radius: var(--r-lg);
+      padding: 22px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      position: sticky;
+      top: 28px;
+      height: calc(100vh - 56px);
+    }
+
+    .brand-block {
+      display: flex; align-items: center; gap: 10px;
+      padding: 0 4px;
+    }
+    .brand-mark {
+      width: 38px; height: 38px;
+      background: var(--text-dark);
+      border-radius: 11px;
+      display: flex; align-items: center; justify-content: center;
+      color: white;
+      flex-shrink: 0;
+    }
+    .brand-name {
+      font-size: 17px; font-weight: 900; letter-spacing: -0.02em;
+      color: var(--text-dark); line-height: 1.1;
+    }
+    .brand-sub {
+      font-size: 11px; color: var(--text-muted); font-weight: 500;
+      margin-top: 2px;
+    }
+
+    .user-block {
+      background: white;
+      border-radius: var(--r-md);
+      padding: 12px 14px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .user-avatar {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, #fad6c0, #f4a892);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: white; flex-shrink: 0;
+    }
+    .user-greeting-line { font-size: 11px; color: var(--text-muted); font-weight: 600; line-height: 1.2; }
+    .user-name-line { font-size: 14px; font-weight: 800; color: var(--text-dark); letter-spacing: -0.01em; line-height: 1.3; }
+
+    /* 사이드 네비 */
+    .side-nav {
+      display: flex; flex-direction: column; gap: 1px;
+      margin-top: 2px;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 11px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 13px; font-weight: 600;
+      color: var(--text-mid);
+      text-decoration: none;
+      transition: var(--transition-plain);
+    }
+    .nav-item:hover {
+      background: rgba(255,255,255,0.55);
+      color: var(--text-dark);
+    }
+    .nav-item.active {
+      background: var(--text-dark);
+      color: white;
+      font-weight: 700;
+    }
+    .nav-item svg { flex-shrink: 0; }
+
+    /* 프로모 카드 (등급) — 사이드바 하단 고정 */
+    .promo-card {
+      background: linear-gradient(135deg, #fad6c0, #f4b8a3);
+      border-radius: var(--r-md);
+      padding: 16px 16px 14px;
+      margin-top: auto;
+      position: relative;
+      overflow: hidden;
+      text-decoration: none;
+      color: var(--text-dark);
+      display: block;
+    }
+    .promo-card::before {
+      content: '';
+      position: absolute;
+      right: -20px; bottom: -20px;
+      width: 100px; height: 100px;
+      background-image: radial-gradient(circle, rgba(255,255,255,0.35) 1.2px, transparent 1.2px);
+      background-size: 12px 12px;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .promo-label {
+      font-size: 10px; font-weight: 800;
+      color: rgba(40,30,20,0.55);
+      letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    .promo-rank {
+      font-size: 15px; font-weight: 900; color: var(--text-dark);
+      margin-top: 4px; letter-spacing: -0.02em;
+      position: relative; z-index: 1;
+    }
+    .promo-cta {
+      margin-top: 10px;
+      font-size: 11px; font-weight: 700; color: var(--text-dark);
+      position: relative; z-index: 1;
+    }
+
+    /* ═══════════ 메인 영역 ═══════════ */
+    .main-area {
+      min-width: 0;
+      min-height: calc(100vh - 56px);
+      display: flex; flex-direction: column;
+      gap: 18px;
+    }
+
+    /* 상단 검색바 + 액션 */
+    .top-bar {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .search-bar {
+      flex: 1;
+      background: white;
+      border-radius: 14px;
+      padding: 12px 18px;
+      display: flex; align-items: center; gap: 10px;
+      font-size: 13px; color: var(--text-muted); font-weight: 500;
+    }
+    .search-bar svg { color: var(--text-muted); flex-shrink: 0; }
+    .top-action-btn {
+      width: 44px; height: 44px;
+      background: var(--primary);
+      border-radius: 14px;
+      border: none;
+      color: white;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: var(--transition-plain);
+    }
+    .top-action-btn:hover { background: #000; }
+    .logout-btn {
+      background: white;
+      border: none;
+      border-radius: 14px;
+      padding: 0 18px;
+      height: 44px;
+      font-size: 13px; font-weight: 700;
+      color: var(--text-mid);
+      cursor: pointer; font-family: inherit;
+      transition: var(--transition-plain);
+    }
+    .logout-btn:hover { color: #c93131; }
+
+    /* 히어로 텍스트 */
+    .hero {
+      padding: 2px 4px 0;
+    }
+    .hero-meta {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .hero h1 {
+      font-size: 30px;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      color: var(--text-dark);
+      white-space: nowrap;
+    }
+    .hero-sub {
+      font-size: 12.5px; color: var(--text-muted);
+      margin-top: 4px; font-weight: 500;
+    }
+
+    /* ═══════════ 벤또 그리드 ═══════════ */
+    .bento-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: 0.72fr 0.72fr 1fr auto;
+      gap: 14px;
+      min-height: 0;
+    }
+
+    .bento-card {
+      border-radius: var(--r-md);
+      padding: 18px 20px;
+      text-decoration: none;
+      color: var(--text-dark);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 8px;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+      min-height: 0;
+    }
+    .bento-card:hover {
+      transform: translateY(-3px) scale(1.01);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .bento-label {
+      font-size: 12px; font-weight: 800;
+      color: rgba(40,30,20,0.55);
+      letter-spacing: 0.08em; text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+    .bento-title {
+      font-size: 24px; font-weight: 900;
+      letter-spacing: -0.025em; line-height: 1.15;
+    }
+    .bento-text {
+      font-size: 14px; color: var(--text-on-soft);
+      font-weight: 500; line-height: 1.5;
+    }
+    .bento-icon {
+      width: 34px; height: 34px;
+      background: rgba(255,255,255,0.55);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-dark);
+      flex-shrink: 0;
+    }
+
+    /* — 카드 레이아웃 변형 — */
+    .card-edu {
+      grid-column: span 2;
+      grid-row: span 2;
+      background: var(--card-mint);
+      padding: 24px 26px;
+    }
+    .card-cam {
+      grid-column: span 2;
+      grid-row: span 2;
+      background: var(--card-peach);
+      padding: 24px 26px;
+    }
+    .card-edu .bento-title, .card-cam .bento-title { font-size: 34px; margin-top: 2px; }
+    .card-edu .bento-text, .card-cam .bento-text { font-size: 15px; max-width: 92%; }
+    .card-edu .bento-icon, .card-cam .bento-icon { width: 44px; height: 44px; }
+
+    .card-quiz {
+      grid-column: span 2;
+      background: var(--card-yellow);
+      padding: 20px 24px 26px;
+    }
+    .card-quiz .bento-title { font-size: 26px; }
+    .card-dict {
+      grid-column: span 1;
+      background: var(--card-lavender);
+      padding: 18px 20px 24px;
+    }
+    .card-chat {
+      grid-column: span 1;
+      background: var(--card-pink);
+      padding: 18px 20px 24px;
+    }
+
+    .card-num {
+      grid-column: span 1;
+      background: white;
+      border: 1px solid var(--border);
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      gap: 12px;
+    }
+    .card-num .num-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .card-num .bento-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      background: var(--card-cream);
+      flex-shrink: 0;
+    }
+    .card-num .bento-icon svg { width: 20px; height: 20px; }
+    .card-num .bento-label {
+      font-size: 16px; color: var(--text-dark);
+      letter-spacing: 0; text-transform: none; font-weight: 700;
+      margin-bottom: 0;
+    }
+    .card-num .num-value {
+      font-size: 15px; font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0; line-height: 1;
+    }
+
+    /* ─ 하단 래퍼 ─ */
+    .bottom-area {
+      grid-column: span 4;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+    .banner-placeholder {
+      height: 116px;
+      background: var(--card-cream);
+      border-radius: var(--r-md);
+      display: flex;
+      align-items: stretch;
+    }
+    .banner-link {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 5px;
+      color: var(--text-dark);
+      text-decoration: none;
+      text-align: left;
+      padding: 14px 16px;
+      margin: 14px 7px;
+      border: 1px solid #bbb;
+      border-radius: 10px;
+      background: var(--card-cream);
+      transition: var(--transition-plain);
+    }
+    .banner-link:first-child { margin-left: 14px; }
+    .banner-link:last-child  { margin-right: 14px; }
+    .banner-link:hover {
+      border-color: #888;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.10);
+      text-decoration: underline;
+    }
+    .banner-link-name {
+      font-size: 1rem; font-weight: 600;
+    }
+    .banner-link-tel {
+      font-size: 0.8rem; font-weight: 400;
+      color: #555;
+    }
+    /* ─ promo-card 진행률 ─ */
+    .promo-progress-track {
+      height: 6px;
+      background: rgba(255,255,255,0.45);
+      border-radius: 99px;
+      overflow: hidden;
+      margin-top: 10px;
+      position: relative; z-index: 1;
+    }
+    .promo-progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 99px;
+      transition: width 0.6s ease;
+      width: 0%;
+    }
+    .promo-progress-next {
+      font-size: 10px; font-weight: 700;
+      color: rgba(40,30,20,0.6);
+      margin-top: 5px;
+      position: relative; z-index: 1;
+    }
+
+    .card-badge-card {
+      grid-column: span 1;
+      background: white;
+      border: 1px solid var(--border);
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 16px;
+      padding: 14px 20px;
+    }
+    .card-badge-card .bento-icon {
+      width: 34px; height: 34px;
+      background: #fce0e6; color: #c45f8a;
+      border-radius: 14px;
+      flex-shrink: 0;
+    }
+    .card-badge-card .bento-icon svg { width: 16px; height: 16px; }
+    .card-badge-card .bento-title { font-size: 24px; }
+    .card-badge-card .bento-text { margin-top: 2px; font-size: 14px; }
+
+    /* ═══════════ 우측 패널 ═══════════ */
+    .right-panel {
+      display: flex; flex-direction: column; gap: 18px;
+      position: sticky; top: 28px;
+      height: calc(100vh - 56px);
+    }
+
+    .right-section { background: transparent; min-height: 0; }
+    .right-panel > .right-section:first-child {
+      flex: 1.4;
+      display: flex;
+      flex-direction: column;
+    }
+    .right-panel > .right-section:last-child {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .right-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 12px; gap: 8px;
+    }
+    .right-title {
+      font-size: 15px; font-weight: 800;
+      letter-spacing: -0.02em; color: var(--text-dark);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .right-title-day {
+      font-size: 11px; color: var(--text-muted);
+      font-weight: 700;
+    }
+    .day-chip {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 5px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-mid);
+      white-space: nowrap;
+    }
+
+    /* — 오늘의 단어 리스트 (세로) — */
+    .daily-section {
+      background: transparent; padding: 0;
+      flex: 1; min-height: 0;
+      display: flex; flex-direction: column;
+    }
+    .daily-section .daily-header { display: none; } /* 기존 헤더 숨김, right-header 사용 */
+    .daily-scroll {
+      display: flex; flex-direction: column; gap: 10px;
+      flex: 1; min-height: 0; overflow-y: auto;
+      padding-right: 4px;
+    }
+    .daily-scroll::-webkit-scrollbar { width: 4px; }
+    .daily-scroll::-webkit-scrollbar-track { background: transparent; }
+    .daily-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .daily-day-group { display: flex; flex-direction: column; gap: 10px; }
+    .daily-day-header {
+      display: flex; align-items: center; gap: 8px;
+      padding: 0 4px;
+    }
+    .daily-day-label {
+      font-size: 11px; font-weight: 800;
+      color: var(--text-mid); letter-spacing: -0.01em;
+    }
+    .daily-day-cards { display: flex; flex-direction: column; gap: 10px; }
+
+    .daily-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px 16px;
+      display: flex; flex-direction: column;
+      gap: 6px;
+      text-decoration: none;
+      transition: var(--transition);
+      min-width: unset; max-width: unset;
+    }
+    .daily-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
+      border-color: transparent;
+    }
+    .daily-card.done { background: #eef9ef; border-color: #c8e6c8; opacity: 0.85; }
+    .daily-card.locked { filter: blur(2.5px); pointer-events: none; opacity: 0.5; }
+
+    .daily-cat {
+      font-size: 10px; font-weight: 700;
+      color: var(--text-muted); background: var(--bg);
+      border: none; border-radius: 100px;
+      padding: 2px 8px; width: fit-content;
+    }
+    .daily-card.done .daily-cat { color: #2d8053; background: #d6efd6; }
+    .daily-name {
+      font-size: 15px; font-weight: 900;
+      color: var(--text-dark); letter-spacing: -0.02em;
+    }
+    .daily-go-btn {
+      margin-top: 4px; padding: 7px 12px;
+      background: var(--text-dark); color: white;
+      border-radius: 9px;
+      font-size: 11px; font-weight: 800;
+      text-align: center; transition: var(--transition-plain);
+      width: fit-content;
+    }
+    .daily-card.done .daily-go-btn { background: #b8d4b8; }
+
+    .daily-start-btn {
+      margin-left: auto; padding: 4px 12px;
+      background: var(--text-dark); color: white;
+      border: none; border-radius: 100px;
+      font-size: 10px; font-weight: 800;
+      cursor: pointer; font-family: inherit;
+      transition: var(--transition-plain); flex-shrink: 0;
+    }
+    .daily-start-btn.started { background: #d8d4cc; color: #8a8278; cursor: default; pointer-events: none; }
+    .daily-empty {
+      text-align: center; padding: 24px 12px;
+      font-size: 13px; color: var(--text-muted); font-weight: 600;
+    }
+    .daily-day-done-badge {
+      font-size: 9px; font-weight: 800; color: #2d8053;
+      background: #d6efd6; border: none;
+      border-radius: 100px; padding: 1px 7px;
+    }
+
+    /* — 오답 노트 — */
+    .wrong-list {
+      display: flex; flex-direction: column; gap: 8px;
+      flex: 1; min-height: 0;
+      max-height: 100%;
+      overflow-y: auto; padding-right: 4px;
+    }
+    .wrong-list::-webkit-scrollbar { width: 4px; }
+    .wrong-list::-webkit-scrollbar-track { background: transparent; }
+    .wrong-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .wrong-item {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 10px;
+      background: white; border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 14px;
+      cursor: pointer; transition: var(--transition-plain);
+      text-decoration: none; color: inherit;
+    }
+    .wrong-item:hover { border-color: #f4b8a3; }
+    .wrong-word { font-size: 14px; font-weight: 800; color: var(--text-dark); }
+    .wrong-cat {
+      font-size: 10px; font-weight: 700;
+      color: #c93131; background: #fad6d6;
+      padding: 3px 8px; border-radius: 100px;
+      white-space: nowrap;
+    }
+    .wrong-empty {
+      color: var(--text-muted); font-size: 13px;
+      padding: 14px 0; text-align: center; font-weight: 500;
+    }
+
+    /* statsSection: 스크롤 앵커로만 사용 (시각적으로 숨김) */
+    .stats-anchor {
+      display: block;
+      height: 0; padding: 0; margin: 0;
+      visibility: hidden;
+    }
+
+    /* ═══════════ 토스트 / 모달 ═══════════ */
+    .day-start-notice {
+      position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
+      background: var(--text-dark);
+      color: white; padding: 12px 28px; border-radius: 100px;
+      font-size: 14px; font-weight: 700; z-index: 9998;
+      opacity: 0; pointer-events: none; transition: opacity 0.3s; white-space: nowrap;
+      box-shadow: 0 8px 28px rgba(50,30,15,0.25);
+    }
+    .day-start-notice.show { opacity: 1; }
+
+    .cm-overlay {
+      position: fixed; inset: 0; background: rgba(40,30,20,0.45);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 0.25s;
+    }
+    .cm-overlay.show { opacity: 1; pointer-events: auto; }
+    .cm-box {
+      background: white; border-radius: 24px; padding: 36px 28px;
+      max-width: 320px; width: 90%; text-align: center;
+      box-shadow: 0 20px 60px rgba(40,30,20,0.18);
+      transform: translateY(24px); transition: transform 0.25s;
+    }
+    .cm-overlay.show .cm-box { transform: translateY(0); }
+    .cm-emoji { font-size: 48px; margin-bottom: 10px; }
+    .cm-title { font-size: 22px; font-weight: 900; color: var(--text-dark); margin-bottom: 6px; }
+    .cm-sub   { font-size: 13px; color: var(--text-muted); font-weight: 600; margin-bottom: 24px; }
+    .cm-btns  { display: flex; flex-direction: column; gap: 10px; }
+    .cm-btn-next   { padding: 13px; background: var(--text-dark); color: white; border: none; border-radius: 14px; font-size: 14px; font-weight: 800; cursor: pointer; font-family: inherit; transition: var(--transition-plain); }
+    .cm-btn-next:hover { background: #000; }
+    .cm-btn-finish { padding: 13px; border: 1px solid var(--border); background: white; color: var(--text-dark); border-radius: 14px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; transition: var(--transition-plain); }
+    .cm-btn-finish:hover { border-color: var(--text-mid); }
+
+    /* ═══════════ 로그인/회원가입 오버레이 ═══════════ */
+    .auth-overlay {
+      position: fixed; inset: 0;
+      background: var(--bg);
+      z-index: 100;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    .auth-overlay.hidden { display: none; }
+    .auth-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 48px 40px;
+      width: 100%; max-width: 420px;
+      box-shadow: 0 8px 32px rgba(50,30,15,0.06);
+      text-align: center;
+    }
+    .auth-logo {
+      width: 56px; height: 56px;
+      background: var(--text-dark);
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      color: white; margin: 0 auto 18px;
+    }
+    .auth-title {
+      font-size: 24px; font-weight: 900; letter-spacing: -0.02em;
+      color: var(--text-dark); margin-bottom: 4px;
+    }
+    .auth-subtitle {
+      font-size: 13px; color: var(--text-muted); margin-bottom: 28px;
+    }
+    .auth-tabs {
+      display: flex;
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 4px; margin-bottom: 24px;
+    }
+    .auth-tab {
+      flex: 1; padding: 9px;
+      border: none; background: transparent;
+      border-radius: 9px;
+      font-size: 13px; font-weight: 700;
+      color: var(--text-muted); cursor: pointer;
+      transition: var(--transition-plain); font-family: inherit;
+    }
+    .auth-tab.active { background: white; color: var(--text-dark); }
+    .auth-form { display: flex; flex-direction: column; gap: 12px; text-align: left; }
+    .auth-form.hidden { display: none; }
+    .input-group { display: flex; flex-direction: column; gap: 6px; }
+    .input-label { font-size: 12px; font-weight: 700; color: var(--text-mid); }
+    .auth-input {
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 14px; font-family: inherit;
+      outline: none; background: white;
+      color: var(--text-dark);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .auth-input:focus {
+      border-color: var(--text-dark);
+      box-shadow: 0 0 0 3px rgba(40,30,20,0.08);
+    }
+    .auth-btn {
+      width: 100%; padding: 13px;
+      background: var(--text-dark);
+      color: white; border: none;
+      border-radius: 14px;
+      font-size: 14px; font-weight: 800;
+      cursor: pointer; transition: var(--transition-plain);
+      font-family: inherit; margin-top: 4px;
+    }
+    .auth-btn:hover { background: #000; }
+    .auth-btn:disabled { background: #c4bdb1; cursor: not-allowed; }
+    .auth-error, .auth-success {
+      border-radius: 10px; padding: 10px 14px;
+      font-size: 13px; font-weight: 600; display: none;
+    }
+    .auth-error { background: #fde4e4; border: 1px solid #f4b8b8; color: #c93131; }
+    .auth-error.show { display: block; }
+    .auth-success { background: #e4f5e0; border: 1px solid #b8e0a8; color: #2d8053; }
+    .auth-success.show { display: block; }
+
+    /* ═══════════ 반응형 ═══════════ */
+    @media (max-width: 1280px) {
+      .app-shell {
+        grid-template-columns: 230px 1fr 320px;
+        padding: 24px 28px;
+      }
+    }
+    @media (max-width: 1080px) {
+      .app-shell {
+        grid-template-columns: 220px 1fr;
+        padding: 20px 24px;
+      }
+      .right-panel { display: none; }
+    }
+    @media (max-width: 760px) {
+      .app-shell {
+        grid-template-columns: 1fr;
+        padding: 16px; gap: 16px;
+      }
+      .sidebar { position: relative; top: 0; }
+      .bento-grid { grid-template-columns: 1fr 1fr; grid-auto-rows: 110px; }
+      .card-edu, .card-cam, .card-quiz, .card-badge-card {
+        grid-column: span 2;
+      }
+      .hero h1 { font-size: 30px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ─── 로그인/회원가입 오버레이 (구조 그대로 유지) ─── -->
+  <div class="auth-overlay" id="authOverlay">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+      </div>
+      <div class="auth-title">SORI</div>
+      <div class="auth-subtitle">AI 기반 한국 수어 학습 플랫폼</div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')">로그인</button>
+        <button class="auth-tab" id="tabRegister" onclick="switchTab('register')">회원가입</button>
+      </div>
+
+      <div class="auth-form" id="loginForm">
+        <div class="auth-error" id="loginError"></div>
+        <div class="input-group">
+          <label class="input-label">이메일</label>
+          <input class="auth-input" type="email" id="loginEmail" placeholder="이메일을 입력하세요" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">비밀번호</label>
+          <input class="auth-input" type="password" id="loginPassword" placeholder="비밀번호를 입력하세요" />
+        </div>
+        <button class="auth-btn" id="loginBtn" onclick="handleLogin()">로그인</button>
+      </div>
+
+      <div class="auth-form hidden" id="registerForm">
+        <div class="auth-error" id="registerError"></div>
+        <div class="auth-success" id="registerSuccess"></div>
+        <div class="input-group">
+          <label class="input-label">이름</label>
+          <input class="auth-input" type="text" id="registerName" placeholder="이름을 입력하세요" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">이메일</label>
+          <input class="auth-input" type="email" id="registerEmail" placeholder="이메일을 입력하세요" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">비밀번호</label>
+          <input class="auth-input" type="password" id="registerPassword" placeholder="비밀번호를 입력하세요" />
+        </div>
+        <button class="auth-btn" id="registerBtn" onclick="handleRegister()">회원가입</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 메인 앱 셸 ─── -->
+  <div class="app-shell">
+
+    <!-- ═══ 좌측 사이드바 ═══ -->
+    <aside class="sidebar">
+
+      <div class="brand-block">
+        <div class="brand-mark">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+        </div>
+        <div>
+          <div class="brand-name">SORI</div>
+          <div class="brand-sub">AI 수어 학습</div>
+        </div>
+      </div>
+
+      <div class="user-block">
+        <div class="user-avatar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <div>
+          <div class="user-greeting-line">반가워요</div>
+          <div class="user-name-line"><span id="userName">친구</span>님</div>
+        </div>
+      </div>
+
+      <nav class="side-nav">
+        <a class="nav-item active" href="sign_language_homepage.html">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          홈
+        </a>
+        <a class="nav-item" href="education.html">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          교육
+        </a>
+        <a class="nav-item" href="quiz.html">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          퀴즈
+        </a>
+        <a class="nav-item" href="dictionary.html">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          사전
+        </a>
+        <a class="nav-item" href="chatbot.html">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          챗봇
+        </a>
+        <a class="nav-item" href="translation.html">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          수어 인식
+        </a>
+        <a class="nav-item" href="badges.html">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+          뱃지
+        </a>
+      </nav>
+
+      <a class="promo-card" href="badges.html">
+        <div class="promo-label">현재 등급</div>
+        <div class="promo-rank" id="userRankChip">🌱 수어 입문자</div>
+        <div class="promo-progress-track">
+          <div class="promo-progress-fill" id="promoProgressFill"></div>
+        </div>
+        <div class="promo-progress-next" id="promoProgressNext">다음 등급까지 100% 남았어요</div>
+        <div class="promo-cta">자세히 보기 →</div>
+      </a>
+    </aside>
+
+    <!-- ═══ 메인 영역 ═══ -->
+    <main class="main-area">
+
+      <!-- 상단 검색·액션 바 -->
+      <div class="top-bar">
+        <div class="search-bar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span>새로운 수어 단어를 검색해 보세요</span>
+        </div>
+        <a class="top-action-btn" href="dictionary.html" aria-label="사전 검색">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+        <button class="logout-btn" onclick="handleLogout()">로그아웃</button>
+      </div>
+
+      <!-- 히어로 -->
+      <div class="hero">
+        <div class="hero-meta">Today's Learning</div>
+        <h1>수어, 함께 배워볼까요?</h1>
+        <div class="hero-sub">손짓 하나하나에 담긴 의미를 천천히 배워봐요.</div>
+      </div>
+
+      <!-- 벤또 그리드 -->
+      <div class="bento-grid">
+
+        <!-- 교육 — 민트 (대형 2x2) -->
+        <a class="bento-card card-edu" href="education.html">
+          <div class="bento-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          </div>
+          <div>
+            <div class="bento-label">Education</div>
+            <div class="bento-title">교육</div>
+          </div>
+          <div class="bento-text">기초부터 차근차근, 내 속도에 맞춰 배워봐요.</div>
+        </a>
+
+        <!-- 수어 인식 — 피치 (대형 2x2) -->
+        <a class="bento-card card-cam" href="translation.html">
+          <div class="bento-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          </div>
+          <div>
+            <div class="bento-label">Camera</div>
+            <div class="bento-title">수어 인식</div>
+          </div>
+          <div class="bento-text">카메라 앞에서 동작하면 실시간으로 인식해 드려요.</div>
+        </a>
+
+        <!-- 퀴즈 — 옐로우 (가로 2칸) -->
+        <a class="bento-card card-quiz" href="quiz.html">
+          <div class="bento-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <div>
+            <div class="bento-title">퀴즈</div>
+            <div class="bento-text">매주 학습 내용 복습</div>
+          </div>
+        </a>
+
+        <!-- 사전 — 라벤더 -->
+        <a class="bento-card card-dict" href="dictionary.html">
+          <div class="bento-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </div>
+          <div>
+            <div class="bento-title">사전</div>
+            <div class="bento-text">3D로 동작 보기</div>
+          </div>
+        </a>
+
+        <!-- 챗봇 — 핑크 -->
+        <a class="bento-card card-chat" href="chatbot.html">
+          <div class="bento-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <div>
+            <div class="bento-title">챗봇</div>
+            <div class="bento-text">AI에게 물어봐요</div>
+          </div>
+        </a>
+
+        <!-- 하단 영역 (통계 3카드 + 배너) -->
+        <div class="bottom-area">
+          <div class="stat-row">
+
+            <!-- 정답률 -->
+            <div class="bento-card card-num">
+              <div class="num-left">
+                <div class="bento-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+                </div>
+                <div class="bento-label">정답률</div>
+              </div>
+              <div class="num-value" id="statAccuracy">-</div>
+            </div>
+
+            <!-- 학습 단어 수 -->
+            <div class="bento-card card-num">
+              <div class="num-left">
+                <div class="bento-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                </div>
+                <div class="bento-label">학습 단어</div>
+              </div>
+              <div class="num-value" id="statWords">-</div>
+            </div>
+
+            <!-- 뱃지 -->
+            <a class="bento-card card-badge-card" href="badges.html">
+              <div class="bento-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+              </div>
+              <div>
+                <div class="bento-title">뱃지</div>
+                <div class="bento-text">나의 등급과 성장 기록 →</div>
+              </div>
+            </a>
+
+          </div>
+
+          <!-- 배너: 관련 링크 3개 -->
+          <div class="banner-placeholder">
+            <a class="banner-link" href="http://www.kahi.or.kr/" target="_blank" rel="noopener">
+              <span class="banner-link-name">한국청각장애인협회</span>
+              <span class="banner-link-tel">02-2060-4284</span>
+            </a>
+            <a class="banner-link" href="https://www.deafkorea.com/main/" target="_blank" rel="noopener">
+              <span class="banner-link-name">한국농아인협회</span>
+              <span class="banner-link-tel">02-461-2261</span>
+            </a>
+            <a class="banner-link" href="https://supporter.chungbuk.ac.kr/" target="_blank" rel="noopener">
+              <span class="banner-link-name">충북대학교 장애학생지원센터</span>
+              <span class="banner-link-tel">043-261-3565</span>
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- ═══ 우측 패널 ═══ -->
+    <aside class="right-panel">
+
+      <!-- 오늘의 단어 -->
+      <div class="right-section">
+        <div class="right-header">
+          <div class="right-title">
+            오늘의 단어
+            <span class="right-title-day" id="dailyDayLabel"></span>
+          </div>
+          <div class="day-chip" id="dailyProgress">불러오는 중</div>
+        </div>
+        <div class="daily-section" id="dailySection">
+          <div class="daily-header" style="display:none">
+            <div class="daily-title">오늘의 단어</div>
+            <div class="daily-progress">-</div>
+          </div>
+          <div class="daily-scroll" id="dailyList"></div>
+        </div>
+      </div>
+
+      <!-- 오답 노트 (statsSection ID 부착 — 스크롤 앵커) -->
+      <div class="right-section" id="statsSection">
+        <div class="right-header">
+          <div class="right-title">오답 노트</div>
+        </div>
+        <div class="wrong-list" id="wrongList">
+          <div class="wrong-empty">불러오는 중...</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- ─── 일차 시작 토스트 ─── -->
+  <div id="dayStartNotice" class="day-start-notice"></div>
+
+  <!-- ─── 일차 완료 모달 ─── -->
+  <div class="cm-overlay" id="cmOverlay">
+    <div class="cm-box">
+      <div class="cm-emoji">🎉</div>
+      <div class="cm-title" id="cmTitle">N일차 완료!</div>
+      <div class="cm-sub">오늘의 단어를 모두 학습했습니다!</div>
+      <div class="cm-btns">
+        <button class="cm-btn-next"   id="cmBtnNext">다음 일차 도전 →</button>
+        <button class="cm-btn-finish" id="cmBtnFinish">학습 종료</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE_URL = "https://antler-bulldog-puppet.ngrok-free.dev";
+    const GCS_BASE_URL = "https://storage.googleapis.com/sign-language-data-2026-jw/processed/avatars_3d";
+
+    const NGROK_HEADERS = {
+      "Content-Type": "application/json",
+      "ngrok-skip-browser-warning": "true"
+    };
+
+    // ── 페이지 로드 시 로그인 여부 확인 ──
+    window.addEventListener("DOMContentLoaded", () => {
+      const userId = localStorage.getItem("user_id");
+      const userName = localStorage.getItem("user_name");
+      if (userId) {
+        showHome(userName, userId);
+      } else {
+        document.getElementById("authOverlay").classList.remove("hidden");
+      }
+    });
+
+    // ── 탭 전환 ──
+    function switchTab(tab) {
+      document.getElementById("loginForm").classList.toggle("hidden", tab !== "login");
+      document.getElementById("registerForm").classList.toggle("hidden", tab !== "register");
+      document.getElementById("tabLogin").classList.toggle("active", tab === "login");
+      document.getElementById("tabRegister").classList.toggle("active", tab === "register");
+      clearErrors();
+    }
+
+    function clearErrors() {
+      ["loginError", "registerError", "registerSuccess"].forEach(id => {
+        const el = document.getElementById(id);
+        el.classList.remove("show");
+        el.textContent = "";
+      });
+    }
+
+    // ── 로그인 ──
+    async function handleLogin() {
+      console.log("로그인 시도 시작!");
+      const email = document.getElementById("loginEmail").value.trim();
+      const password = document.getElementById("loginPassword").value.trim();
+      const errorEl = document.getElementById("loginError");
+      const btn = document.getElementById("loginBtn");
+
+      if (!email || !password) {
+        errorEl.textContent = "이메일과 비밀번호를 입력해주세요.";
+        errorEl.classList.add("show");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = "로그인 중...";
+
+      try {
+        console.log("로그인 요청 주소:", API_BASE_URL + "/users/login");
+        const res = await fetch(`${API_BASE_URL}/users/login`, {
+          method: "POST",
+          headers: NGROK_HEADERS,
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        console.log("[로그인 응답]", res.status, JSON.stringify(data, null, 2));
+
+        if (!res.ok) {
+          const detail = data.detail;
+          let msg;
+          if (typeof detail === 'string') {
+            msg = detail;
+          } else if (Array.isArray(detail)) {
+            msg = detail.map(e => {
+              const loc = Array.isArray(e.loc) ? e.loc.join(' → ') : '';
+              return loc ? `[${loc}] ${e.msg}` : (e.msg || JSON.stringify(e));
+            }).join(' / ');
+          } else {
+            msg = JSON.stringify(detail);
+          }
+          errorEl.textContent = msg || "로그인에 실패했습니다.";
+          errorEl.classList.add("show");
+          return;
+        }
+
+        // 로그인 성공 → localStorage 저장
+        localStorage.setItem("user_id", data.user_id);
+        localStorage.setItem("user_name", data.name);
+        alert("로그인 성공!");
+        window.location.href = 'sign_language_homepage.html';
+
+      } catch (e) {
+        console.error("[로그인 catch 오류]", e);
+        errorEl.textContent = "서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.";
+        errorEl.classList.add("show");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "로그인";
+      }
+    }
+
+    // ── 회원가입 ──
+    async function handleRegister() {
+      const name = document.getElementById("registerName").value.trim();
+      const email = document.getElementById("registerEmail").value.trim();
+      const password = document.getElementById("registerPassword").value.trim();
+      const errorEl = document.getElementById("registerError");
+      const successEl = document.getElementById("registerSuccess");
+      const btn = document.getElementById("registerBtn");
+
+      if (!name || !email || !password) {
+        errorEl.textContent = "모든 항목을 입력해주세요.";
+        errorEl.classList.add("show");
+        return;
+      }
+      if (password.length < 6) {
+        errorEl.textContent = "비밀번호는 6자 이상이어야 합니다.";
+        errorEl.classList.add("show");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = "가입 중...";
+      errorEl.classList.remove("show");
+      successEl.classList.remove("show");
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/users/register`, {
+          method: "POST",
+          headers: NGROK_HEADERS,
+          body: JSON.stringify({ name, email, password })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          const detail = data.detail;
+          console.error("[회원가입 오류] 서버 응답 전체:", JSON.stringify(data, null, 2));
+          let msg;
+          if (typeof detail === 'string') {
+            msg = detail;
+          } else if (Array.isArray(detail)) {
+            msg = detail.map(e => {
+              const loc = Array.isArray(e.loc) ? e.loc.join(' → ') : '';
+              return loc ? `[${loc}] ${e.msg}` : (e.msg || JSON.stringify(e));
+            }).join(' / ');
+          } else {
+            msg = JSON.stringify(detail);
+          }
+          errorEl.textContent = msg || "회원가입에 실패했습니다.";
+          errorEl.classList.add("show");
+          return;
+        }
+
+        // 회원가입 성공 → 로그인 탭으로 이동
+        successEl.textContent = "회원가입 성공! 로그인해주세요 😄";
+        successEl.classList.add("show");
+        document.getElementById("registerName").value = "";
+        document.getElementById("registerEmail").value = "";
+        document.getElementById("registerPassword").value = "";
+        setTimeout(() => switchTab("login"), 1500);
+
+      } catch (e) {
+        errorEl.textContent = "서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.";
+        errorEl.classList.add("show");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "회원가입";
+      }
+    }
+
+    // ── 홈 화면 표시 ──
+    function showHome(name, userId) {
+      document.getElementById("authOverlay").classList.add("hidden");
+      document.getElementById("userName").textContent = name;
+      _updateRankChip();
+      if (userId) {
+        loadDailyWords(userId);
+        loadLearningStats(userId);
+        loadWrongNote(userId);
+      }
+    }
+
+    // ── 현재 등급 계산 및 칩 갱신 (quiz_stats 기반) ──
+    function _getUserRank() {
+      const qs = JSON.parse(localStorage.getItem('quiz_stats') || '{"correct":0,"total":0}');
+      const total = qs.total || 0;
+      const accuracy = total > 0 ? Math.round(qs.correct / qs.total * 100) : 0;
+      if (total >= 20 && accuracy === 100) return { emoji: '👑', name: '수어 천재' };
+      if (total >= 20 && accuracy >= 95)  return { emoji: '💎', name: '수어 챔피언' };
+      if (total >= 15 && accuracy >= 80)  return { emoji: '🥇', name: '수어 마스터' };
+      if (total >= 10 && accuracy >= 60)  return { emoji: '🥈', name: '수어 학습자' };
+      if (total >= 5  && accuracy >= 40)  return { emoji: '🥉', name: '수어 도전자' };
+      return { emoji: '🌱', name: '수어 입문자' };
+    }
+    function _updateRankChip() {
+      const chip = document.getElementById('userRankChip');
+      if (!chip) return;
+      const rank = _getUserRank();
+      if (rank) {
+        chip.textContent = `${rank.emoji} ${rank.name}`;
+        chip.style.display = '';
+      } else {
+        chip.style.display = 'none';
+      }
+      _updateRankBanner();
+    }
+
+    function _updateRankBanner() {
+      const RANKS = [
+        { emoji: '🌱', name: '수어 입문자', minTotal: 0,  minAcc: 0   },
+        { emoji: '🥉', name: '수어 도전자', minTotal: 5,  minAcc: 40  },
+        { emoji: '🥈', name: '수어 학습자', minTotal: 10, minAcc: 60  },
+        { emoji: '🥇', name: '수어 마스터', minTotal: 15, minAcc: 80  },
+        { emoji: '💎', name: '수어 챔피언', minTotal: 20, minAcc: 95  },
+        { emoji: '👑', name: '수어 천재',   minTotal: 20, minAcc: 100 },
+      ];
+      const qs = JSON.parse(localStorage.getItem('quiz_stats') || '{"correct":0,"total":0}');
+      const total = qs.total || 0;
+      const accuracy = total > 0 ? Math.round(qs.correct / qs.total * 100) : 0;
+
+      let rankIdx = 0;
+      for (let i = RANKS.length - 1; i >= 0; i--) {
+        if (total >= RANKS[i].minTotal && accuracy >= RANKS[i].minAcc) { rankIdx = i; break; }
+      }
+      const next = RANKS[rankIdx + 1];
+
+      const fillEl = document.getElementById('promoProgressFill');
+      const textEl = document.getElementById('promoProgressNext');
+      if (!fillEl) return;
+
+      if (!next) {
+        fillEl.style.width = '100%';
+        if (textEl) textEl.textContent = '🏆 모든 등급 달성!';
+        return;
+      }
+
+      const totalPct = next.minTotal > 0 ? Math.min(100, Math.round(total / next.minTotal * 100)) : 100;
+      const accPct   = next.minAcc   > 0 ? Math.min(100, Math.round(accuracy / next.minAcc * 100)) : 100;
+      const pct = Math.min(totalPct, accPct);
+
+      fillEl.style.width = pct + '%';
+      if (textEl) textEl.textContent = `다음 등급까지 ${100 - pct}% 남았어요`;
+    }
+
+    // ── 로그아웃 ──
+    function handleLogout() {
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("user_id");
+      localStorage.removeItem("user_name");
+      localStorage.removeItem("quiz_stats");     // 퀴즈 정답률 누적 초기화
+      localStorage.removeItem("quiz_word_ids"); // 학습 단어 수 초기화
+      const uid = localStorage.getItem("user_id");
+      if (uid) localStorage.removeItem(`progress_day_${uid}`);
+      // daily_done은 날짜 키를 포함하므로 다음날 자동 무효화 — 명시적 삭제 불필요
+      document.getElementById("authOverlay").classList.remove("hidden");
+      switchTab("login");
+    }
+
+    // ── 오늘의 단어 진척도 localStorage 헬퍼 (quiz_stats와 별개, 날짜별 초기화) ──
+    function _dailyKey(uid) {
+      const d = new Date();
+      return `daily_done_${uid}_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+    }
+    function _getDailyDone(uid) {
+      return new Set(JSON.parse(localStorage.getItem(_dailyKey(uid)) || '[]'));
+    }
+    function _markDailyDone(uid, wordId) {
+      const done = _getDailyDone(uid);
+      done.add(String(wordId));
+      localStorage.setItem(_dailyKey(uid), JSON.stringify([...done]));
+    }
+
+    // ── 일차 시작 기록 localStorage 헬퍼 ──
+    function _startedKey(uid) {
+      const d = new Date();
+      return `daily_started_${uid}_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+    }
+    function _getDailyStarted(uid) {
+      // 숫자/문자 혼재 방지: 항상 String으로 정규화
+      return new Set(JSON.parse(localStorage.getItem(_startedKey(uid)) || '[]').map(String));
+    }
+    function _addDailyStarted(uid, dayNum) {
+      const s = _getDailyStarted(uid);
+      const key = String(dayNum);
+      if (s.has(key)) return; // 중복 추가 방지
+      s.add(key);
+      localStorage.setItem(_startedKey(uid), JSON.stringify([...s]));
+    }
+
+    // ── 일차 시작 토스트 ──
+    function _showDayStartNotice(dayNum) {
+      const el = document.getElementById('dayStartNotice');
+      if (!el) return;
+      el.textContent = `${dayNum}일차 학습을 시작합니다! 💪`;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 2500);
+    }
+
+    // ── 일차 완료 모달 ──
+    function showCompletionModal(dayNum) {
+      const overlay = document.getElementById('cmOverlay');
+      document.getElementById('cmTitle').textContent = `${dayNum}일차 완료!`;
+      const userId = localStorage.getItem('user_id');
+
+      document.getElementById('cmBtnFinish').onclick = () => {
+        overlay.classList.remove('show');
+        document.getElementById('statsSection').scrollIntoView({ behavior: 'smooth' });
+        if (userId) { loadLearningStats(userId); loadWrongNote(userId); }
+      };
+      document.getElementById('cmBtnNext').onclick = () => {
+        overlay.classList.remove('show');
+        if (userId) {
+          localStorage.setItem(`progress_day_${userId}`, dayNum + 1);
+          loadDailyWords(userId);
+        }
+        setTimeout(() => document.getElementById('dailySection')
+          ?.scrollIntoView({ behavior: 'smooth' }), 300);
+      };
+      overlay.classList.add('show');
+    }
+
+    // ── 오늘의 단어 로드 ──
+    async function loadDailyWords(userId) {
+      const list     = document.getElementById('dailyList');
+      const progress = document.getElementById('dailyProgress');
+      const dayLabel = document.getElementById('dailyDayLabel');
+
+      // 진도 일차: localStorage 기준 (백엔드 의존 없음)
+      const progressDay = parseInt(localStorage.getItem(`progress_day_${userId}`) || '1');
+      if (dayLabel) dayLabel.textContent = `· ${progressDay}일차`;
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/daily/curriculum/${progressDay}`, { headers: NGROK_HEADERS });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const words = await res.json();
+
+        if (!words.length) {
+          list.innerHTML = '<div class="daily-empty">모든 커리큘럼을 완료했습니다! 🎉</div>';
+          progress.textContent = '완료!';
+          return;
+        }
+
+        const doneSet   = _getDailyDone(userId);
+        const isWordDone = w => doneSet.has(String(w.word_id));
+        const doneCount  = words.filter(isWordDone).length;
+
+        if (doneCount >= words.length) {
+          list.innerHTML = `
+            <div class="daily-empty">🎉 오늘의 학습 완료!</div>
+            <div style="text-align:center;margin-top:12px;">
+              <button id="nextDayBtn" style="padding:10px 24px;background:var(--text-dark);color:white;border:none;border-radius:12px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;">
+                다음 일차 도전 →
+              </button>
+            </div>`;
+          progress.textContent = '완료!';
+          document.getElementById('nextDayBtn').addEventListener('click', () => {
+            localStorage.setItem(`progress_day_${userId}`, progressDay + 1);
+            loadDailyWords(userId);
+            document.getElementById('dailySection')?.scrollIntoView({ behavior: 'smooth' });
+          });
+          return;
+        }
+
+        progress.textContent = `${doneCount} / ${words.length}`;
+        list.innerHTML = '';
+
+        const group = document.createElement('div');
+        group.className = 'daily-day-group';
+
+        const header = document.createElement('div');
+        header.className = 'daily-day-header';
+        const label = document.createElement('span');
+        label.className = 'daily-day-label';
+        label.textContent = `${progressDay}일차`;
+        header.appendChild(label);
+
+        const cardsRow = document.createElement('div');
+        cardsRow.className = 'daily-day-cards';
+
+        const startedSet = _getDailyStarted(userId);
+        const isStarted  = startedSet.has(String(progressDay));
+        const startBtn   = document.createElement('button');
+        startBtn.className = `daily-start-btn${isStarted ? ' started' : ''}`;
+        startBtn.textContent = isStarted ? '학습 중' : '학습 시작하기';
+        if (!isStarted) {
+          startBtn.addEventListener('click', () => {
+            _addDailyStarted(userId, progressDay);
+            startBtn.textContent = '학습 중';
+            startBtn.className = 'daily-start-btn started';
+            cardsRow.querySelectorAll('.daily-card.locked').forEach(c => c.classList.remove('locked'));
+            _showDayStartNotice(progressDay);
+          });
+        }
+        header.appendChild(startBtn);
+        group.appendChild(header);
+
+        words.forEach(w => {
+          const cat    = w.category && w.category !== 'null' && w.category !== 'undefined' ? w.category : '';
+          const isDone = isWordDone(w);
+          const card   = document.createElement('a');
+          card.className = `daily-card${isDone ? ' done' : ''}${!isStarted ? ' locked' : ''}`;
+          card.href = `education.html?word_id=${w.word_id}`;
+
+          card.addEventListener('click', (e) => {
+            e.preventDefault();
+            const ids = words.map(x => x.word_id).filter(id => id != null);
+
+            if (!card.classList.contains('done')) {
+              _markDailyDone(userId, w.word_id);
+              card.classList.add('done');
+              card.querySelector('.daily-go-btn').textContent = '✓ 학습함';
+              if (w.word_id && userId) {
+                fetch(`${API_BASE_URL}/learning/log`, {
+                  method: 'POST',
+                  headers: { ...NGROK_HEADERS, 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ user_id: parseInt(userId,10), word_id: parseInt(w.word_id,10), score: 100, is_correct: true, mode: 'study' })
+                }).catch(() => {});
+              }
+              const thisDone = cardsRow.querySelectorAll('.daily-card.done').length;
+              const thisTot  = cardsRow.querySelectorAll('.daily-card').length;
+              const doneCards = document.querySelectorAll('.daily-card.done').length;
+              const totalCards = document.querySelectorAll('.daily-card').length;
+              progress.textContent = doneCards >= totalCards ? '완료!' : `${doneCards} / ${totalCards}`;
+
+              if (thisDone >= thisTot) {
+                localStorage.setItem('current_learning_ids', JSON.stringify(ids));
+                localStorage.setItem('current_learning_words', JSON.stringify(words));
+                localStorage.setItem('current_learning_day', String(progressDay));
+                showCompletionModal(progressDay);
+                return;
+              }
+            }
+
+            localStorage.setItem('current_learning_ids', JSON.stringify(ids));
+            localStorage.setItem('current_learning_words', JSON.stringify(words));
+            localStorage.setItem('current_learning_day', String(progressDay));
+            window.location.href = card.href;
+          });
+
+          card.innerHTML = `
+            ${cat ? `<div class="daily-cat">${cat}</div>` : ''}
+            <div class="daily-name">${w.word_name}</div>
+            <div class="daily-go-btn">${isDone ? '✓ 학습함' : '학습하기 →'}</div>
+          `;
+          cardsRow.appendChild(card);
+        });
+
+        group.appendChild(cardsRow);
+        list.appendChild(group);
+      } catch (e) {
+        console.error('[loadDailyWords]', e);
+        list.innerHTML = '<div class="daily-empty">오늘의 단어를 불러올 수 없습니다.</div>';
+        progress.textContent = '-';
+      }
+    }
+
+    // ── 학습 완료 처리 ──
+    async function markComplete(dailyId, cardEl) {
+      const btn = cardEl.querySelector('.daily-complete-btn');
+      btn.disabled = true;
+      btn.textContent = '처리 중...';
+      try {
+        const res = await fetch(`${API_BASE_URL}/daily/${dailyId}/complete`, {
+          method: 'PATCH',
+          headers: NGROK_HEADERS
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        cardEl.classList.add('done');
+        btn.textContent = '✓ 완료';
+        const doneCount = document.querySelectorAll('.daily-card.done').length;
+        const total = document.querySelectorAll('.daily-card').length;
+        document.getElementById('dailyProgress').textContent = `${doneCount} / ${total}`;
+      } catch (e) {
+        console.error('[markComplete]', e);
+        btn.disabled = false;
+        btn.textContent = '학습 완료';
+        alert('완료 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+      }
+    }
+
+    // ── 학습 통계 로드 ──
+    function loadLearningStats(userId) {
+      // 퀴즈 정답률: localStorage quiz_stats 기준 (study 로그 오염 없음)
+      const qs = JSON.parse(localStorage.getItem('quiz_stats') || '{"correct":0,"total":0}');
+      const accuracy = (qs.total > 0) ? Math.round(qs.correct / qs.total * 100) : 0;
+      document.getElementById('statAccuracy').textContent = accuracy + '%';
+      // 학습 단어 수: 퀴즈에서 푼 distinct word_id 개수 (교육 모드 제외, 중복 없음)
+      const qw = JSON.parse(localStorage.getItem('quiz_word_ids') || '[]');
+      document.getElementById('statWords').textContent = qw.length;
+      _updateRankChip();
+    }
+
+    // ── 오답 노트 로드 ──
+    async function loadWrongNote(userId) {
+      const list = document.getElementById('wrongList');
+      try {
+        const res = await fetch(`${API_BASE_URL}/learning/${userId}/wrong`, { headers: NGROK_HEADERS });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const items = await res.json();
+        console.log('[loadWrongNote] 원본 응답:', items);
+        const words = Array.isArray(items)
+          ? items
+          : (items.words ?? items.data ?? items.items ?? []);
+
+        if (!words.length) {
+          list.innerHTML = '<div class="wrong-empty">아직 오답이 없습니다! 🎉</div>';
+          return;
+        }
+
+        list.innerHTML = '';
+        words.forEach(w => {
+          const wordId = w.word_id;
+          const name = w.word_name || `#${wordId}`;
+          const a = document.createElement('a');
+          a.className = 'wrong-item';
+          a.href = `dictionary.html?word_id=${wordId}`;
+          a.title = `사전에서 '${name}' 보기`;
+          a.innerHTML = `
+            <span class="wrong-word">${name}</span>
+            ${w.category ? `<span class="wrong-cat">${w.category}</span>` : ''}
+          `;
+          list.appendChild(a);
+        });
+      } catch (e) {
+        console.error('[loadWrongNote]', e);
+        list.innerHTML = '<div class="wrong-empty">오답 노트를 불러올 수 없습니다.</div>';
+      }
+    }
+
+    // ── 탭 복귀 시 통계·오답 노트 1회 갱신 (퀴즈 → 홈 전환 즉시 반영) ──
+    // focus 이벤트는 개발자 도구·클릭 등 모든 포커스에 반응해 무한 루프를 유발하므로
+    // visibilitychange(탭 전환 전용) + 500ms 디바운스로 교체한다
+    let _refreshTimer = null;
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState !== 'visible') return;
+      const userId = localStorage.getItem('user_id');
+      if (!userId) return;
+      clearTimeout(_refreshTimer);
+      _refreshTimer = setTimeout(() => {
+        loadDailyWords(userId);
+        loadLearningStats(userId);
+        loadWrongNote(userId);
+      }, 500);
+    });
+
+    // ── Enter 키 지원 ──
+    document.addEventListener("keydown", e => {
+      if (e.key !== "Enter") return;
+      const loginHidden = document.getElementById("loginForm").classList.contains("hidden");
+      if (!loginHidden) handleLogin();
+      else handleRegister();
+    });
+  </script>
+  <script src="chatbot-overlay.js"></script>
+</body>
+</html>

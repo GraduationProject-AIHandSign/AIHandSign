@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>수어 사전 | AI 수어 학습 플랫폼</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f3eee5;
+      --sidebar-bg: #e6e3f1;
+      --accent: #6a5cd6;
+      --accent-hover: #5648c0;
+      --text-dark: #1a1a2e;
+      --text-mid: #3d3d5c;
+      --text-muted: #7b7b9a;
+      --text-on-soft: #4a4060;
+      --border: #e0dff0;
+      --card-cream: #f9f6f0;
+      --card-soft: #ede9f8;
+      --card-yellow:  #fdedb0;
+      --card-mint:    #c9e6d4;
+      --card-peach:   #fad6c0;
+      --card-lavender:#d9d1ee;
+      --card-pink:    #fcd4d8;
+      --card-coral:   #f4b8a3;
+      --shadow-card: 0 2px 12px rgba(40,30,80,0.07);
+      --shadow-hover: 0 6px 24px rgba(40,30,80,0.14);
+      --r-sm: 10px; --r-md: 14px; --r-lg: 18px; --r-xl: 24px;
+      --transition-plain: box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh; font-family: "Noto Sans KR", sans-serif;
+      background: var(--bg); color: var(--text-dark); -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── 앱 셸 ── */
+    .app-shell { display: flex; height: 100vh; overflow: hidden; }
+
+    /* ── 사이드바 ── */
+    .sidebar {
+      background: var(--sidebar-bg); border-radius: var(--r-lg);
+      padding: 22px 18px; display: flex; flex-direction: column; gap: 14px;
+      width: 260px; height: 100%; flex-shrink: 0; overflow-y: auto;
+    }
+    .brand-block { display: flex; align-items: center; gap: 10px; padding: 0 4px; }
+    .brand-mark {
+      width: 38px; height: 38px; background: var(--text-dark); border-radius: 11px;
+      display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;
+    }
+    .brand-name { font-size: 16px; font-weight: 900; color: var(--text-dark); letter-spacing: -0.02em; line-height: 1.2; }
+    .brand-sub { font-size: 11px; color: var(--text-muted); font-weight: 600; margin-top: 1px; }
+    .user-block {
+      background: white; border-radius: var(--r-md); padding: 12px 14px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .user-avatar {
+      width: 34px; height: 34px; background: var(--sidebar-bg); border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; color: var(--text-mid); flex-shrink: 0;
+    }
+    .user-greeting-line { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+    .user-name-line { font-size: 14px; font-weight: 800; color: var(--text-dark); letter-spacing: -0.01em; line-height: 1.3; }
+    .side-nav { display: flex; flex-direction: column; gap: 1px; margin-top: 2px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 11px; padding: 8px 12px;
+      border-radius: 10px; font-size: 13px; font-weight: 600;
+      color: var(--text-mid); text-decoration: none; transition: var(--transition-plain);
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.55); color: var(--text-dark); }
+    .nav-item.active { background: var(--text-dark); color: white; font-weight: 700; }
+    .nav-item svg { flex-shrink: 0; }
+    .promo-card {
+      background: linear-gradient(135deg, #fad6c0, #f4b8a3);
+      border-radius: var(--r-md); padding: 16px 16px 14px; margin-top: auto;
+      position: relative; overflow: hidden; text-decoration: none; color: var(--text-dark); display: block;
+    }
+    .promo-card::before {
+      content: ''; position: absolute; right: -20px; bottom: -20px;
+      width: 100px; height: 100px;
+      background-image: radial-gradient(circle, rgba(255,255,255,0.35) 1.2px, transparent 1.2px);
+      background-size: 12px 12px; border-radius: 50%; pointer-events: none;
+    }
+    .promo-label { font-size: 10px; font-weight: 800; color: rgba(40,30,20,0.55); letter-spacing: 0.08em; text-transform: uppercase; }
+    .promo-rank { font-size: 15px; font-weight: 900; color: var(--text-dark); margin-top: 4px; letter-spacing: -0.02em; position: relative; z-index: 1; }
+    .promo-cta { margin-top: 10px; font-size: 11px; font-weight: 700; color: var(--text-dark); position: relative; z-index: 1; }
+    .promo-progress-track { height: 6px; background: rgba(255,255,255,0.45); border-radius: 99px; overflow: hidden; margin-top: 10px; position: relative; z-index: 1; }
+    .promo-progress-fill { height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.6s ease; width: 0%; }
+    .promo-progress-next { font-size: 10px; font-weight: 700; color: rgba(40,30,20,0.6); margin-top: 5px; position: relative; z-index: 1; }
+
+    /* ── 메인 영역 ── */
+    .dict-main {
+      flex: 1; overflow-y: auto; padding: 28px 28px 48px;
+      display: flex; flex-direction: column; gap: 20px;
+    }
+    .dict-main::-webkit-scrollbar { width: 5px; }
+    .dict-main::-webkit-scrollbar-thumb { background: var(--border); border-radius: 5px; }
+
+    /* ── 히어로 (검색) 카드 ── */
+    .dict-hero {
+      background: var(--card-soft); border-radius: var(--r-xl);
+      padding: 32px 36px; position: relative; overflow: hidden;
+      flex-shrink: 0;
+    }
+    .dict-hero::before {
+      content: ''; position: absolute; right: -40px; bottom: -40px;
+      width: 200px; height: 200px;
+      background-image: radial-gradient(circle, rgba(106,92,214,0.18) 1.4px, transparent 1.4px);
+      background-size: 14px 14px; border-radius: 50%; pointer-events: none;
+    }
+    .dict-hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.75); color: var(--text-dark);
+      border-radius: 100px; padding: 6px 14px;
+      font-size: 12px; font-weight: 800; margin-bottom: 14px; letter-spacing: 0.02em;
+    }
+    .dict-title { font-size: 28px; font-weight: 900; letter-spacing: -0.03em; color: var(--text-dark); margin-bottom: 6px; line-height: 1.2; }
+    .dict-desc { font-size: 14px; font-weight: 500; color: var(--text-on-soft); margin-bottom: 20px; line-height: 1.6; }
+
+    /* ── 검색 바 ── */
+    .search-wrap { display: flex; gap: 10px; max-width: 600px; }
+    .search-wrap input {
+      flex: 1; padding: 13px 20px; font-size: 15px;
+      border: 2px solid var(--border); border-radius: var(--r-md);
+      outline: none; transition: border-color 0.2s; font-family: inherit;
+      background: white; color: var(--text-dark);
+    }
+    .search-wrap input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(106,92,214,0.12); }
+    .search-wrap input::placeholder { color: var(--text-muted); }
+    .search-wrap button {
+      padding: 0 24px; font-size: 14px; font-weight: 800;
+      background: var(--accent); color: white; border: none;
+      border-radius: var(--r-md); cursor: pointer;
+      transition: background 0.15s, box-shadow 0.15s; font-family: inherit; white-space: nowrap;
+    }
+    .search-wrap button:hover { background: var(--accent-hover); box-shadow: 0 4px 14px rgba(106,92,214,0.3); }
+
+    /* ── 카테고리 필터 ── */
+    .category-filter { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; position: relative; z-index: 1; }
+    .cat-btn {
+      padding: 7px 16px; border: 1.5px solid var(--border); border-radius: 100px;
+      background: rgba(255,255,255,0.75); color: var(--text-on-soft);
+      font-size: 13px; font-weight: 700; cursor: pointer;
+      transition: border-color 0.15s, background 0.15s, color 0.15s; font-family: inherit;
+    }
+    .cat-btn:hover { border-color: var(--accent); color: var(--accent); background: white; }
+    .cat-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+    /* ── 단어 카드 그리드 ── */
+    .results-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 18px; }
+    .result-card {
+      background: white;
+      border: 1px solid var(--border); border-left: 3px solid var(--border);
+      border-radius: var(--r-md);
+      padding: 26px; cursor: pointer; transition: var(--transition-plain);
+      text-align: left; box-shadow: var(--shadow-card);
+    }
+    .result-card:hover { box-shadow: var(--shadow-hover); }
+    /* 카테고리별 왼쪽 컬러 포인트 */
+    .result-card.cat-yellow   { border-left-color: var(--card-yellow); }
+    .result-card.cat-yellow:hover   { border-left-color: #d4be50; box-shadow: 0 6px 20px rgba(200,170,30,0.14); }
+    .result-card.cat-mint     { border-left-color: var(--card-mint); }
+    .result-card.cat-mint:hover     { border-left-color: #7ec8a8; box-shadow: 0 6px 20px rgba(60,180,140,0.14); }
+    .result-card.cat-peach    { border-left-color: var(--card-peach); }
+    .result-card.cat-peach:hover    { border-left-color: #e8a870; box-shadow: 0 6px 20px rgba(220,130,70,0.14); }
+    .result-card.cat-lavender { border-left-color: var(--card-lavender); }
+    .result-card.cat-lavender:hover { border-left-color: #a890d8; box-shadow: 0 6px 20px rgba(130,100,210,0.14); }
+    .result-card.cat-coral    { border-left-color: var(--card-coral); }
+    .result-card.cat-coral:hover    { border-left-color: #d07848; box-shadow: 0 6px 20px rgba(210,100,60,0.14); }
+    .result-card.cat-pink     { border-left-color: var(--card-pink); }
+    .result-card.cat-pink:hover     { border-left-color: #e890a0; box-shadow: 0 6px 20px rgba(220,80,120,0.14); }
+    .result-word { font-size: 22px; font-weight: 900; color: var(--text-dark); margin-bottom: 6px; letter-spacing: -0.02em; }
+    .result-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+    .no-result { text-align: center; padding: 40px; color: var(--text-muted); font-size: 16px; font-weight: 600; grid-column: 1 / -1; }
+
+    /* 오버레이 팝업 */
+    .word-viewer { display: none; position: fixed; inset: 0; z-index: 200; background: #06080e; flex-direction: column; }
+    .word-viewer.open { display: flex; }
+    .wv-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; background: rgba(255,255,255,0.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .wv-back { background: white; border: 1px solid var(--border); color: var(--text-mid); border-radius: 100px; padding: 8px 14px; cursor: pointer; font-size: 13px; font-weight: 700; font-family: inherit; transition: 0.15s; }
+    .wv-back:hover { background: var(--bg); border-color: var(--text-dark); color: var(--text-dark); }
+    .wv-title { font-size: 15px; font-weight: 800; color: var(--text-dark); }
+    .wv-stage { flex: 1; position: relative; overflow: hidden; min-height: 0; }
+    .wv-stage canvas { display: block; width: 100% !important; height: 100% !important; }
+    .wv-loading { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: rgba(255,255,255,0.5); font-size: 13px; }
+    .wv-spinner { width: 36px; height: 36px; border: 2px solid rgba(255,255,255,0.12); border-top-color: rgba(255,255,255,0.75); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .wv-controls { position: absolute; bottom: 0; left: 0; right: 0; padding: 10px 16px 14px; background: linear-gradient(to top, rgba(6,8,14,0.92), transparent); display: flex; align-items: center; gap: 8px; }
+    .wv-av-btn { width: 34px; height: 34px; border-radius: 10px; border: none; background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.15s; }
+    .wv-av-btn:hover { background: rgba(255,255,255,0.25); }
+    .wv-av-btn.is-playing { background: var(--text-dark); color: #fff; }
+    .wv-av-progress { flex: 1; height: 4px; background: rgba(255,255,255,0.12); border-radius: 4px; overflow: hidden; }
+    .wv-av-bar { height: 100%; background: rgba(255,255,255,0.8); width: 0%; }
+    .wv-av-frame { font-size: 10px; color: rgba(255,255,255,0.5); font-family: monospace; min-width: 40px; text-align: right; }
+    .wv-speed-wrap { display: flex; align-items: center; gap: 8px; flex-shrink: 0; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 4px 10px; }
+    .wv-speed-label { font-size: 10px; color: rgba(255,255,255,0.5); font-family: monospace; white-space: nowrap; }
+    .wv-speed-btns { display: flex; gap: 4px; }
+    .wv-spd-btn { padding: 4px 9px; border-radius: 7px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: rgba(255,255,255,0.55); font-size: 10px; font-weight: 600; cursor: pointer; transition: 0.15s; white-space: nowrap; font-family: inherit; }
+    .wv-spd-btn:hover { border-color: rgba(255,255,255,0.4); color: white; }
+    .wv-spd-btn.active { background: var(--text-dark); border-color: var(--text-dark); color: #fff; }
+    .wv-shortcut-hint { font-size: 10px; color: rgba(255,255,255,0.4); font-family: monospace; white-space: nowrap; flex-shrink: 0; }
+    .wv-footer { flex-shrink: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 1px solid var(--border); padding: 18px 24px 20px; display: flex; flex-direction: column; gap: 14px; }
+    .wv-footer-top { display: flex; align-items: flex-start; gap: 16px; }
+    .wv-word-info { flex: 1; min-width: 0; }
+    .wv-word-label { font-size: 12px; color: var(--text-muted); font-weight: 700; font-family: monospace; margin-bottom: 4px; }
+    .wv-word-name { font-size: 32px; font-weight: 900; color: var(--text-dark); line-height: 1.15; }
+    .wv-desc-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .wv-desc-box { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
+    .wv-desc-title { font-size: 11px; font-weight: 700; font-family: monospace; letter-spacing: 0.06em; margin-bottom: 7px; }
+    .wv-desc-title.meaning { color: var(--text-mid); }
+    .wv-desc-title.how { color: var(--text-mid); }
+    .wv-desc-text { font-size: 13px; color: var(--text-mid); line-height: 1.75; }
+    .wv-desc-text.skeleton { color: transparent; background: var(--border); border-radius: 6px; height: 52px; animation: pulse 1.2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+    @media (max-width: 640px) { .wv-desc-wrap { grid-template-columns: 1fr; } .wv-word-name { font-size: 26px; } }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <!-- ═══ 좌측 사이드바 ═══ -->
+  <aside class="sidebar">
+    <div class="brand-block">
+      <div class="brand-mark">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+      </div>
+      <div>
+        <div class="brand-name">SORI</div>
+        <div class="brand-sub">AI 수어 학습</div>
+      </div>
+    </div>
+    <div class="user-block">
+      <div class="user-avatar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <div>
+        <div class="user-greeting-line">반가워요</div>
+        <div class="user-name-line"><span id="userName">친구</span>님</div>
+      </div>
+    </div>
+    <nav class="side-nav">
+      <a class="nav-item" href="sign_language_homepage.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        홈
+      </a>
+      <a class="nav-item" href="education.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        교육
+      </a>
+      <a class="nav-item" href="quiz.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        퀴즈
+      </a>
+      <a class="nav-item active" href="dictionary.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        사전
+      </a>
+      <a class="nav-item" href="chatbot.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        챗봇
+      </a>
+      <a class="nav-item" href="translation.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        수어 인식
+      </a>
+      <a class="nav-item" href="badges.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+        뱃지
+      </a>
+    </nav>
+    <a class="promo-card" href="badges.html">
+      <div class="promo-label">현재 등급</div>
+      <div class="promo-rank" id="userRankChip">🌱 수어 입문자</div>
+      <div class="promo-progress-track">
+        <div class="promo-progress-fill" id="promoProgressFill"></div>
+      </div>
+      <div class="promo-progress-next" id="promoProgressNext">다음 등급까지 100% 남았어요</div>
+      <div class="promo-cta">자세히 보기 →</div>
+    </a>
+  </aside>
+
+  <!-- ═══ 메인 영역 ═══ -->
+  <main class="dict-main">
+    <div class="dict-hero" id="search-section">
+      <div class="dict-hero-badge">📖 수어 사전</div>
+      <div class="dict-title">전체 단어 목록</div>
+      <p class="dict-desc">원하는 수어 단어를 검색하거나 카테고리별로 탐색해보세요.</p>
+      <div class="search-wrap">
+        <input id="searchInput" type="text" placeholder="단어를 검색하세요..." />
+        <button id="searchBtn">검색</button>
+      </div>
+      <div class="category-filter" id="categoryFilter">
+        <button class="cat-btn active" data-cat="">전체</button>
+        <button class="cat-btn" data-cat="일상 · 생활">일상 · 생활</button>
+        <button class="cat-btn" data-cat="감정 · 행동">감정 · 행동</button>
+        <button class="cat-btn" data-cat="음식 · 건강">음식 · 건강</button>
+        <button class="cat-btn" data-cat="교육 · 직업">교육 · 직업</button>
+        <button class="cat-btn" data-cat="사회 · 공공">사회 · 공공</button>
+        <button class="cat-btn" data-cat="자연 · 동식물">자연 · 동식물</button>
+        <button class="cat-btn" data-cat="스포츠 · 문화">스포츠 · 문화</button>
+        <button class="cat-btn" data-cat="교통 · 장소">교통 · 장소</button>
+        <button class="cat-btn" data-cat="기타">기타</button>
+      </div>
+    </div>
+    <div class="results-grid" id="word-grid"></div>
+  </main>
+</div>
+
+  <div class="word-viewer" id="wordViewer">
+    <div class="wv-header">
+      <button class="wv-back" id="wvBack">← 목록으로</button>
+      <div class="wv-title">수어 사전 상세 보기</div>
+      <div style="width:70px"></div>
+    </div>
+    <div class="wv-stage">
+      <canvas id="wvCanvas"></canvas>
+      <div class="wv-loading" id="wvLoading"><div class="wv-spinner"></div><span>수어 데이터 불러오는 중...</span></div>
+      <div class="wv-controls">
+        <button class="wv-av-btn is-playing" id="wvPlayBtn">⏸</button>
+        <button class="wv-av-btn" id="wvReplayBtn">↺</button>
+        <div class="wv-av-progress"><div class="wv-av-bar" id="wvBar"></div></div>
+        <span class="wv-av-frame" id="wvFrame"></span>
+        <div class="wv-speed-wrap">
+          <span class="wv-speed-label">속도</span>
+          <div class="wv-speed-btns" id="wvSpeedBtns">
+            <button class="wv-spd-btn" data-step="1">1</button>
+            <button class="wv-spd-btn" data-step="2">2</button>
+            <button class="wv-spd-btn active" data-step="3">3</button>
+            <button class="wv-spd-btn" data-step="4">4</button>
+            <button class="wv-spd-btn" data-step="5">5</button>
+          </div>
+        </div>
+        <span class="wv-shortcut-hint">[Space] 재생/정지 · [R] 다시보기 · [Esc] 닫기</span>
+      </div>
+    </div>
+    <div class="wv-footer">
+      <div class="wv-footer-top">
+        <div class="wv-word-info">
+          <div class="wv-word-label">수어 사전 단어</div>
+          <div class="wv-word-name" id="wvWordName">단어명</div>
+        </div>
+      </div>
+      <div class="wv-desc-wrap">
+        <div class="wv-desc-box">
+          <div class="wv-desc-title meaning">📖 단어 의미</div>
+          <div class="wv-desc-text" id="wvDescMeaning"></div>
+        </div>
+        <div class="wv-desc-box">
+          <div class="wv-desc-title how">🤟 수어 표현 방법</div>
+          <div class="wv-desc-text skeleton" id="wvDescHow"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+// =========================================================================
+// 1. API 상수 & 공통 헤더
+// =========================================================================
+const API_BASE = "https://antler-bulldog-puppet.ngrok-free.dev";
+const GCS_BASE_URL = "https://storage.googleapis.com/sign-language-data-2026-jw/processed/avatars_3d";
+const NGROK_HEADERS = { "ngrok-skip-browser-warning": "true" };
+
+// =========================================================================
+// 2. 엔진 및 로직 영역 (수정 절대 금지)
+// =========================================================================
+const HC=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[0,9],[9,10],[10,11],[11,12],[0,13],[13,14],[14,15],[15,16],[0,17],[17,18],[18,19],[19,20],[5,9],[9,13],[13,17]];
+const R={white:'#d8dce8',whiteHi:'#eef0f6',whiteLo:'#b0b6c8',body:'#c0c6d4',bodyHi:'#dce0ea',bodyLo:'#98a0b4',bodyDk:'#6e7690',gray:'#8a92a8',grayHi:'#a8b0c4',grayLo:'#626a80',grayDk:'#3e4458',visor:'#0a0e18',visorEdge:'#2a3040',panelLine:'rgba(0,0,0,.12)',core:'#4af0d0',accent:'#5cc8f5'};
+function h2r(h){return[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];}
+
+const _allPlayers=new Set();let _rafActive=false;
+function _loop(){_allPlayers.forEach(p=>p._tick());if(_allPlayers.size)requestAnimationFrame(_loop);else _rafActive=false;}
+function _ensureLoop(){if(!_rafActive){_rafActive=true;requestAnimationFrame(_loop);}}
+
+class AvatarPlayer {
+  constructor(cvEl,progEl,playBtn,frameCounterEl){
+    this.cv=cvEl; this.g=cvEl.getContext('2d');
+    this.progEl=progEl; this.playBtn=playBtn; this.frameCounterEl=frameCounterEl;
+    this.D=null; this.fr=0; this.playing=false;
+    this.speed=6; // 기본 속도 3단계
+    this.animT=0; this.frameAcc=0;
+    this.trail=[]; this.TL=5;
+    this.zMin=2; this.zMax=2.5; this.zMid=2.3;
+    this.sc=1; this.oX=0; this.oY=0;
+    this._resize();
+    this._onResize=()=>this._resize();
+    window.addEventListener('resize',this._onResize);
+  }
+  load(data){this.D=data;this.fr=0;this.trail=[];this._calcBounds();this._play();_allPlayers.add(this);_ensureLoop();}
+  setSpeed(fps){this.speed=fps;}
+  destroy(){this.playing=false;_allPlayers.delete(this);window.removeEventListener('resize',this._onResize);}
+  _play(){this.playing=true;if(this.playBtn){this.playBtn.textContent='⏸';this.playBtn.classList.add('is-playing');}}
+  _pause(){this.playing=false;if(this.playBtn){this.playBtn.textContent='▶';this.playBtn.classList.remove('is-playing');}}
+  toggle(){this.playing?this._pause():this._play();}
+  replay(){this.fr=0;this.trail=[];this._play();}
+  _resize(){
+    this.W=this.cv.width=window.innerWidth;
+    this.H=this.cv.height=window.innerHeight;
+    if(this.D)this._calcBounds();
+    this._bg();
+  }
+  _tick(){
+    if(!this.D){this._bg();return;}
+    this.animT+=0.03;
+    if(this.playing){
+      this.frameAcc+=this.speed/60;
+      if(this.frameAcc>=1){
+        this.frameAcc-=1;
+        const f=this.D.frames[this.fr];
+        this.trail.push({lh:[...f.left_hand],rh:[...f.right_hand]});
+        if(this.trail.length>this.TL)this.trail.shift();
+        this.fr=(this.fr+1)%this.D.frames.length;
+      }
+    }
+    this._draw(this.fr);
+  }
+  _calcBounds(){
+    let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9; this.zMin=1e9; this.zMax=-1e9;
+    for(const f of this.D.frames)
+      for(const pt of[...f.pose,...f.left_hand,...f.right_hand,...f.face]){
+        if(pt[0]<x0)x0=pt[0]; if(pt[0]>x1)x1=pt[0];
+        if(pt[1]<y0)y0=pt[1]; if(pt[1]>y1)y1=pt[1];
+        if(pt[2]<this.zMin)this.zMin=pt[2]; if(pt[2]>this.zMax)this.zMax=pt[2];
+      }
+    this.zMid=(this.zMin+this.zMax)/2;
+    const padX=120, padY=280;
+    this.sc=Math.min((this.W-padX*2)/(x1-x0||1), (this.H-padY*2)/(y1-y0||1));
+    this.oX=this.W/2-((x0+x1)/2)*this.sc;
+    this.oY=this.H/2-((y0+y1)/2)*this.sc - 60;
+    let px0=1e9,px1=-1e9,py0=1e9,py1=-1e9;
+    for(const f of this.D.frames)
+      for(const pt of[...f.pose,...f.left_hand,...f.right_hand,...f.face]){
+        const p=this._pj(pt);
+        if(p.x<px0)px0=p.x; if(p.x>px1)px1=p.x;
+        if(p.y<py0)py0=p.y; if(p.y>py1)py1=p.y;
+      }
+    this.oX+=this.W/2-(px0+px1)/2;
+    this.oY+=this.H/2-(py0+py1)/2 - 60;
+  }
+  _pj(pt){const zN=(pt[2]-this.zMid)/(this.zMax-this.zMin+.001),ps=1-zN*.25;return{x:pt[0]*this.sc*ps+this.oX,y:pt[1]*this.sc*ps+this.oY,z:pt[2],s:ps};}
+  _zB(z){return .55+(1-(z-this.zMin)/(this.zMax-this.zMin+.001))*.45;}
+  _zS(z){return .88+(1-(z-this.zMin)/(this.zMax-this.zMin+.001))*.24;}
+  _d3(a,b){return Math.sqrt((a[0]-b[0])**2+(a[1]-b[1])**2+(a[2]-b[2])**2);}
+  _m3(a,b){return[(a[0]+b[0])/2,(a[1]+b[1])/2,(a[2]+b[2])/2];}
+  _col(hex,z){const b=this._zB(z),[r,g,bl]=h2r(hex);return`rgb(${r*b|0},${g*b|0},${bl*b|0})`;}
+  _draw(idx){
+    const{g,W,H}=this;g.clearRect(0,0,W,H);this._bg();
+    if(!this.D)return;
+    this._drawTrail();this._drawRobot(this.D.frames[idx]);
+    const total=this.D.frames.length;
+    const pct=total>1?(idx/(total-1))*100:0;
+    if(this.progEl)this.progEl.style.width=pct+'%';
+  }
+  _bg(){
+    const{g,W,H}=this;
+    g.strokeStyle='rgba(18,22,38,.35)';g.lineWidth=.5;
+    for(let x=0;x<W;x+=55){g.beginPath();g.moveTo(x,0);g.lineTo(x,H);g.stroke();}
+    for(let y=0;y<H;y+=55){g.beginPath();g.moveTo(0,y);g.lineTo(W,y);g.stroke();}
+    const v=g.createRadialGradient(W/2,H*.38,0,W/2,H*.38,Math.max(W,H)*.65);
+    v.addColorStop(0,'rgba(12,18,35,.1)');v.addColorStop(.5,'rgba(8,12,22,.35)');v.addColorStop(1,'rgba(6,8,14,.75)');
+    g.fillStyle=v;g.fillRect(0,0,W,H);
+  }
+  _drawTrail(){
+    const{g}=this;
+    this.trail.forEach((tf,ti)=>{
+      const a=(ti+1)/this.trail.length*.15;
+      const dr=(pts,r,gg,b)=>{if(!pts)return;HC.forEach(([x,y])=>{if(!pts[x]||!pts[y])return;const pa=this._pj(pts[x]),pb=this._pj(pts[y]);g.beginPath();g.moveTo(pa.x,pa.y);g.lineTo(pb.x,pb.y);g.strokeStyle=`rgba(${r},${gg},${b},${a})`;g.lineWidth=3;g.lineCap='round';g.stroke();});};
+      if(tf.rh)dr(tf.rh,92,156,245);if(tf.lh)dr(tf.lh,245,92,138);
+    });
+  }
+  _drawRobot(f){
+    const p=f.pose; const hd=p[0],ls=p[2],rs=p[5],le=p[3],re=p[6],lw=p[4],rw=p[7],hip=p[8];
+    if(!hd||!ls||!rs)return;
+    const lH=f.right_hand,rH=f.left_hand;
+    const parts=[];
+    parts.push({z:(ls[2]+rs[2])/2+.01,fn:()=>this._body(ls,rs,hip,hd)});
+    if(le&&lw)parts.push({z:Math.min(ls[2],le[2],lw[2]),fn:()=>this._arm(ls,le,lw)});
+    if(re&&rw)parts.push({z:Math.min(rs[2],re[2],rw[2]),fn:()=>this._arm(rs,re,rw)});
+    if(lH&&lH.length>=21)parts.push({z:lH[0][2]-.01,fn:()=>this._hand(lH,'#5c9cf5')});
+    if(rH&&rH.length>=21)parts.push({z:rH[0][2]-.01,fn:()=>this._hand(rH,'#f55c8a')});
+    parts.push({z:hd[2]-.02,fn:()=>this._head(hd,ls,rs,f.face)});
+    parts.sort((a,b)=>b.z-a.z);parts.forEach(pt=>pt.fn());
+  }
+  _head(hd,ls,rs,face){
+    const{g,animT}=this;const hp=this._pj(hd),shD=this._d3(ls,rs);
+    const rs2=shD*.32*this.sc*this._zS(hd[2]),b=this._zB(hd[2]);
+    const neckBot=this._pj(this._m3(ls,rs)),nw=rs2*.18;
+    g.beginPath();g.moveTo(hp.x-nw,hp.y+rs2*.55);g.lineTo(hp.x-nw*.8,neckBot.y);g.lineTo(hp.x+nw*.8,neckBot.y);g.lineTo(hp.x+nw,hp.y+rs2*.55);g.closePath();
+    const ng=g.createLinearGradient(hp.x-nw,0,hp.x+nw,0);ng.addColorStop(0,this._col(R.grayDk,hd[2]));ng.addColorStop(.3,this._col(R.gray,hd[2]));ng.addColorStop(.5,this._col(R.grayHi,hd[2]));ng.addColorStop(.7,this._col(R.gray,hd[2]));ng.addColorStop(1,this._col(R.grayDk,hd[2]));g.fillStyle=ng;g.fill();
+    g.beginPath();g.moveTo(hp.x-nw*.6,neckBot.y-2);g.lineTo(hp.x+nw*.6,neckBot.y-2);g.strokeStyle=R.panelLine;g.lineWidth=.8;g.stroke();
+    const hw=rs2*.88,hh=rs2*1.0,headR=rs2*.42;
+    this._rrect(hp.x-hw,hp.y-hh,hw*2,hh*1.8,headR);
+    const hg=g.createRadialGradient(hp.x-rs2*.2,hp.y-rs2*.3,rs2*.1,hp.x,hp.y,rs2*1.2);
+    hg.addColorStop(0,this._col(R.whiteHi,hd[2]));hg.addColorStop(.4,this._col(R.white,hd[2]));hg.addColorStop(.85,this._col(R.whiteLo,hd[2]));hg.addColorStop(1,this._col(R.bodyLo,hd[2]));g.fillStyle=hg;g.fill();
+    g.save();g.globalAlpha=.12*b;g.beginPath();g.ellipse(hp.x-hw*.4,hp.y-hh*.5,hw*.25,hh*.35,-.3,0,Math.PI*2);g.fillStyle='#fff';g.fill();g.restore();
+    const vY=hp.y-hh*.05,vW=hw*.78,vH=hh*.52,vR=rs2*.28;
+    this._rrect(hp.x-vW,vY-vH*.45,vW*2,vH,vR);
+    const vg=g.createLinearGradient(hp.x-vW,vY-vH*.5,hp.x+vW,vY+vH*.5);
+    vg.addColorStop(0,R.visorEdge);vg.addColorStop(.15,R.visor);vg.addColorStop(.5,'#050810');vg.addColorStop(.85,R.visor);vg.addColorStop(1,R.visorEdge);g.fillStyle=vg;g.fill();
+    g.save();g.globalAlpha=.08*b;g.beginPath();g.ellipse(hp.x-vW*.2,vY-vH*.15,vW*.5,vH*.2,-.1,0,Math.PI*2);g.fillStyle='#6090cc';g.fill();g.restore();
+    g.save();g.globalAlpha=.06*b*(Math.sin(animT*1.5)*.2+.8);g.beginPath();g.ellipse(hp.x,vY+vH*.3,vW*.6,vH*.15,0,0,Math.PI*2);g.fillStyle='#50a0ff';g.fill();g.restore();
+    g.save();g.globalAlpha=.15*b;
+    g.beginPath();g.moveTo(hp.x-hw*.7,hp.y-hh*.3);g.quadraticCurveTo(hp.x-hw*.85,hp.y,hp.x-hw*.7,hp.y+hh*.3);g.strokeStyle='#000';g.lineWidth=.7;g.stroke();
+    g.beginPath();g.moveTo(hp.x+hw*.7,hp.y-hh*.3);g.quadraticCurveTo(hp.x+hw*.85,hp.y,hp.x+hw*.7,hp.y+hh*.3);g.stroke();g.restore();
+    [hp.x-hw*.82,hp.x+hw*.82].forEach(ex=>{const ey=hp.y+hh*.05,er=rs2*.08;g.beginPath();g.arc(ex,ey,er,0,Math.PI*2);g.fillStyle=this._col(R.grayLo,hd[2]);g.fill();g.beginPath();g.arc(ex,ey,er*.5,0,Math.PI*2);g.fillStyle=this._col(R.grayDk,hd[2]);g.fill();});
+  }
+  _rrect(x,y,w,h,r){const{g}=this;g.beginPath();g.moveTo(x+r,y);g.lineTo(x+w-r,y);g.quadraticCurveTo(x+w,y,x+w,y+r);g.lineTo(x+w,y+h-r);g.quadraticCurveTo(x+w,y+h,x+w-r,y+h);g.lineTo(x+r,y+h);g.quadraticCurveTo(x,y+h,x,y+h-r);g.lineTo(x,y+r);g.quadraticCurveTo(x,y,x+r,y);g.closePath();}
+  _body(ls,rs,hip,hd){
+    const{g,animT}=this;const lp=this._pj(ls),rp=this._pj(rs);
+    const bz=(ls[2]+rs[2])/2,b=this._zB(bz);
+    const hcp=hip?this._pj(hip):this._pj([(ls[0]+rs[0])/2,ls[1]+.5,bz+.02]);
+    const cx=(lp.x+rp.x)/2,shW=Math.abs(rp.x-lp.x);
+    const topY=(lp.y+rp.y)/2,botY=hcp.y;
+    const bodyW=shW*.55,hipW=shW*.38,br=shW*.12;
+    g.beginPath();g.moveTo(cx-bodyW+br,topY);g.lineTo(cx+bodyW-br,topY);g.quadraticCurveTo(cx+bodyW,topY,cx+bodyW,topY+br);g.lineTo(cx+hipW,botY-br);g.quadraticCurveTo(cx+hipW,botY,cx+hipW-br,botY);g.lineTo(cx-hipW+br,botY);g.quadraticCurveTo(cx-hipW,botY,cx-hipW,botY-br);g.lineTo(cx-bodyW,topY+br);g.quadraticCurveTo(cx-bodyW,topY,cx-bodyW+br,topY);g.closePath();
+    const bg=g.createLinearGradient(cx-bodyW,topY,cx+bodyW*.3,botY);bg.addColorStop(0,this._col(R.bodyHi,bz));bg.addColorStop(.3,this._col(R.body,bz));bg.addColorStop(.7,this._col(R.bodyLo,bz));bg.addColorStop(1,this._col(R.bodyDk,bz));g.fillStyle=bg;g.fill();
+    const slg=g.createLinearGradient(cx-bodyW,0,cx-bodyW*.3,0);slg.addColorStop(0,'rgba(0,0,0,.18)');slg.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=slg;g.fill();
+    const srg=g.createLinearGradient(cx+bodyW,0,cx+bodyW*.3,0);srg.addColorStop(0,'rgba(0,0,0,.18)');srg.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=srg;g.fill();
+    g.save();g.globalAlpha=.06*b;g.beginPath();g.ellipse(cx-bodyW*.15,topY+shW*.08,bodyW*.5,shW*.12,-.1,0,Math.PI*2);g.fillStyle='#fff';g.fill();g.restore();
+    g.strokeStyle=R.panelLine;g.lineWidth=.6;g.beginPath();g.moveTo(cx,topY+shW*.08);g.lineTo(cx,botY-shW*.06);g.stroke();g.beginPath();g.moveTo(cx-bodyW*.65,topY+shW*.14);g.lineTo(cx+bodyW*.65,topY+shW*.14);g.stroke();
+    const coreY=topY+(botY-topY)*.38,coreR=shW*.10,pulse=Math.sin(animT*2)*.15+.85;
+    const cg=g.createRadialGradient(cx,coreY,0,cx,coreY,coreR*3.5);cg.addColorStop(0,`rgba(74,240,208,${.1*b*pulse})`);cg.addColorStop(1,'rgba(74,240,208,0)');g.fillStyle=cg;g.beginPath();g.arc(cx,coreY,coreR*3.5,0,Math.PI*2);g.fill();
+    g.beginPath();g.arc(cx,coreY,coreR,0,Math.PI*2);g.strokeStyle=`rgba(74,240,208,${.4*b*pulse})`;g.lineWidth=1.5;g.stroke();
+    g.beginPath();g.arc(cx,coreY,coreR*.55,0,Math.PI*2);
+    const ig=g.createRadialGradient(cx,coreY,0,cx,coreY,coreR*.55);ig.addColorStop(0,`rgba(180,255,240,${.85*b*pulse})`);ig.addColorStop(.5,`rgba(74,240,208,${.5*b*pulse})`);ig.addColorStop(1,`rgba(74,240,208,${.15*b*pulse})`);g.fillStyle=ig;g.fill();
+    [lp,rp].forEach(sp=>{const jr=shW*.06;g.beginPath();g.arc(sp.x,sp.y,jr*1.15,0,Math.PI*2);g.fillStyle=this._col(R.grayDk,bz);g.fill();const jg=g.createRadialGradient(sp.x-jr*.25,sp.y-jr*.25,0,sp.x,sp.y,jr);jg.addColorStop(0,this._col(R.grayHi,bz));jg.addColorStop(.5,this._col(R.gray,bz));jg.addColorStop(1,this._col(R.grayDk,bz));g.beginPath();g.arc(sp.x,sp.y,jr,0,Math.PI*2);g.fillStyle=jg;g.fill();g.beginPath();g.arc(sp.x-jr*.2,sp.y-jr*.2,jr*.25,0,Math.PI*2);g.fillStyle=`rgba(255,255,255,${.15*b})`;g.fill();});
+  }
+  _arm(sh,el,wr){
+    const{g}=this;const elP=this._pj(el),wrP=this._pj(wr);const aR=this._d3(sh,el)*.10*this.sc;
+    this._limb(sh,el,aR,aR*.82,R.body,R.bodyHi,R.bodyLo,R.bodyDk);
+    const uMid=this._pj(this._m3(sh,el));g.beginPath();g.arc(uMid.x,uMid.y,aR*.5*this._zS((sh[2]+el[2])/2),0,Math.PI*2);g.strokeStyle=R.panelLine;g.lineWidth=.5;g.stroke();
+    const eR=aR*.85;g.beginPath();g.arc(elP.x,elP.y,eR*1.1,0,Math.PI*2);g.fillStyle=this._col(R.grayDk,el[2]);g.fill();
+    const ejg=g.createRadialGradient(elP.x-eR*.2,elP.y-eR*.2,0,elP.x,elP.y,eR);ejg.addColorStop(0,this._col(R.grayHi,el[2]));ejg.addColorStop(.4,this._col(R.gray,el[2]));ejg.addColorStop(1,this._col(R.grayDk,el[2]));g.beginPath();g.arc(elP.x,elP.y,eR,0,Math.PI*2);g.fillStyle=ejg;g.fill();
+    g.beginPath();g.arc(elP.x-eR*.2,elP.y-eR*.2,eR*.2,0,Math.PI*2);g.fillStyle=`rgba(255,255,255,${.1*this._zB(el[2])})`;g.fill();
+    this._limb(el,wr,aR*.82,aR*.62,R.gray,R.grayHi,R.grayLo,R.grayDk);
+    const wR=aR*.65;g.beginPath();g.arc(wrP.x,wrP.y,wR,0,Math.PI*2);g.strokeStyle=this._col(R.accent,wr[2]);g.lineWidth=2;g.stroke();g.beginPath();g.arc(wrP.x,wrP.y,wR*.7,0,Math.PI*2);g.strokeStyle=`rgba(92,200,245,${.2*this._zB(wr[2])})`;g.lineWidth=.8;g.stroke();
+  }
+  _limb(a,b,rA,rB,base,hi,lo,dk){
+    const{g}=this;const pa=this._pj(a),pb=this._pj(b),az=(a[2]+b[2])/2,zs=this._zS(az);
+    const rpA=rA*zs,rpB=rB*zs,an=Math.atan2(pb.y-pa.y,pb.x-pa.x),pp=an+Math.PI/2;
+    const cp=Math.cos(pp),sp2=Math.sin(pp);
+    g.beginPath();g.moveTo(pa.x+cp*rpA,pa.y+sp2*rpA);g.lineTo(pb.x+cp*rpB,pb.y+sp2*rpB);g.arc(pb.x,pb.y,rpB,pp,pp+Math.PI);g.lineTo(pa.x-cp*rpA,pa.y-sp2*rpA);g.arc(pa.x,pa.y,rpA,pp+Math.PI,pp+Math.PI*2);g.closePath();
+    const mr=Math.max(rpA,rpB),mx=(pa.x+pb.x)/2,my=(pa.y+pb.y)/2;
+    const lg=g.createLinearGradient(mx-cp*mr*1.2,my-sp2*mr*1.2,mx+cp*mr*1.2,my+sp2*mr*1.2);
+    lg.addColorStop(0,this._col(dk||R.grayDk,az));lg.addColorStop(.2,this._col(lo||R.grayLo,az));lg.addColorStop(.45,this._col(base||R.gray,az));lg.addColorStop(.55,this._col(hi||R.grayHi,az));lg.addColorStop(.75,this._col(base||R.gray,az));lg.addColorStop(.9,this._col(lo||R.grayLo,az));lg.addColorStop(1,this._col(dk||R.grayDk,az));g.fillStyle=lg;g.fill();
+  }
+  _hand(hp,color){
+    const{g}=this;if(!hp||hp.length<21)return;
+    const[cr,cg2,cb]=h2r(color),az=hp[0][2],b=this._zB(az);
+    const pi=[0,1,5,9,13,17];g.beginPath();pi.forEach((i,idx)=>{const p=this._pj(hp[i]);idx===0?g.moveTo(p.x,p.y):g.lineTo(p.x,p.y);});g.closePath();
+    const w=this._pj(hp[0]);const pg=g.createRadialGradient(w.x,w.y,0,w.x,w.y,45*this.sc*this._zS(az));pg.addColorStop(0,this._col(R.whiteHi,az));pg.addColorStop(.4,this._col(R.white,az));pg.addColorStop(1,this._col(R.whiteLo,az));g.fillStyle=pg;g.fill();
+    const pi2=[0,5,6,10,14,18,17];g.beginPath();pi2.forEach((i,idx)=>{const p=this._pj(hp[i]);idx===0?g.moveTo(p.x,p.y):g.lineTo(p.x,p.y);});g.closePath();g.fillStyle=this._col(R.white,az);g.fill();
+    const baseR=this._d3(hp[0],hp[9])*.14;
+    [[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16],[17,18,19,20]].forEach((f,fi)=>{
+      const isThumb=fi===0;const pts=f.map((idx,j)=>{const p=this._pj(hp[idx]);const wF=isThumb?[.85,.75,.6,.45]:[.95,.83,.68,.45];return{x:p.x,y:p.y,z:hp[idx][2],r:baseR*(wF[j]||.5)*this.sc*this._zS(hp[idx][2])};});
+      const L=[],Ri=[];
+      for(let j=0;j<pts.length-1;j++){const a=pts[j],b2=pts[j+1];const ang=Math.atan2(b2.y-a.y,b2.x-a.x),pp=ang+Math.PI/2;const cx=Math.cos(pp),sx=Math.sin(pp);L.push({x:a.x+cx*a.r,y:a.y+sx*a.r});if(j===pts.length-2)L.push({x:b2.x+cx*b2.r,y:b2.y+sx*b2.r});Ri.push({x:a.x-cx*a.r,y:a.y-sx*a.r});if(j===pts.length-2)Ri.push({x:b2.x-cx*b2.r,y:b2.y-sx*b2.r});}
+      const tip=pts[pts.length-1];g.beginPath();const sa=Math.atan2(pts[1].y-pts[0].y,pts[1].x-pts[0].x)+Math.PI/2;g.arc(pts[0].x,pts[0].y,pts[0].r,sa,sa+Math.PI);
+      for(let j=0;j<L.length;j++){if(j===0)g.lineTo(L[j].x,L[j].y);else{const pv=L[j-1],cu=L[j];g.quadraticCurveTo(pv.x+(cu.x-pv.x)*.5,pv.y+(cu.y-pv.y)*.5,cu.x,cu.y);}}
+      const ta=Math.atan2(tip.y-pts[pts.length-2].y,tip.x-pts[pts.length-2].x)+Math.PI/2;g.arc(tip.x,tip.y,tip.r,ta-Math.PI,ta);
+      for(let j=Ri.length-1;j>=0;j--){if(j===Ri.length-1)g.lineTo(Ri[j].x,Ri[j].y);else{const pv=Ri[j+1],cu=Ri[j];g.quadraticCurveTo(pv.x+(cu.x-pv.x)*.5,pv.y+(cu.y-pv.y)*.5,cu.x,cu.y);}}
+      g.closePath();
+      const avgZ=f.reduce((s,idx)=>s+hp[idx][2],0)/f.length,midX=(pts[0].x+tip.x)/2,midY=(pts[0].y+tip.y)/2;
+      const fAng=Math.atan2(tip.y-pts[0].y,tip.x-pts[0].x)+Math.PI/2,maxR=pts[0].r;
+      const fg=g.createLinearGradient(midX-Math.cos(fAng)*maxR*1.3,midY-Math.sin(fAng)*maxR*1.3,midX+Math.cos(fAng)*maxR*1.3,midY+Math.sin(fAng)*maxR*1.3);
+      fg.addColorStop(0,this._col(R.whiteLo,avgZ));fg.addColorStop(.2,this._col(R.white,avgZ));fg.addColorStop(.45,this._col(R.whiteHi,avgZ));fg.addColorStop(.55,this._col(R.whiteHi,avgZ));fg.addColorStop(.8,this._col(R.white,avgZ));fg.addColorStop(1,this._col(R.whiteLo,avgZ));g.fillStyle=fg;g.fill();
+      for(let j=1;j<pts.length-1;j++){g.beginPath();g.arc(pts[j].x,pts[j].y,pts[j].r*.85,0,Math.PI*2);g.strokeStyle=`rgba(0,0,0,${.06*this._zB(pts[j].z)})`;g.lineWidth=.5;g.stroke();}
+      const tR=tip.r*.75;const tg2=g.createRadialGradient(tip.x-tR*.2,tip.y-tR*.2,0,tip.x,tip.y,tR*1.1);tg2.addColorStop(0,this._col(R.whiteHi,tip.z));tg2.addColorStop(.4,this._col(R.white,tip.z));tg2.addColorStop(1,'rgba(0,0,0,0)');g.beginPath();g.arc(tip.x,tip.y,tR*1.1,0,Math.PI*2);g.fillStyle=tg2;g.fill();
+    });
+    g.beginPath();g.arc(w.x,w.y,7*this._zS(az),0,Math.PI*2);g.strokeStyle=`rgba(${cr},${cg2},${cb},${.4*b})`;g.lineWidth=2;g.stroke();
+  }
+}
+
+const resultsGrid = document.getElementById('word-grid');
+
+const wvViewer = document.getElementById('wordViewer');
+const wvBack = document.getElementById('wvBack');
+const wvCanvas = document.getElementById('wvCanvas');
+const wvPlayBtn = document.getElementById('wvPlayBtn');
+const wvReplayBtn = document.getElementById('wvReplayBtn');
+const wvWordName = document.getElementById('wvWordName');
+const wvDescMeaning = document.getElementById('wvDescMeaning');
+const wvDescHow = document.getElementById('wvDescHow');
+const wvLoading = document.getElementById('wvLoading');
+const wvBar = document.getElementById('wvBar');
+const wvFrame = document.getElementById('wvFrame');
+
+let wvPlayer = null;
+const descCache = {};
+let allWordsCache = [];
+
+
+function generateSignDescription(wordName, frames){
+  if(!frames || frames.length < 2) return '수어 동작 데이터를 분석할 수 없습니다.';
+  const sample = Math.min(frames.length, 24);
+  const step = Math.floor(frames.length / sample);
+  const samp = Array.from({length: sample}, (_, i) => frames[i * step]);
+  const center = hand => {
+    if(!hand || hand.length < 5) return null;
+    const v = hand.filter(p => p && (p[0]||p[1]));
+    if(!v.length) return null;
+    return { x: v.reduce((s,p)=>s+p[0],0)/v.length, y: v.reduce((s,p)=>s+p[1],0)/v.length };
+  };
+  const spread = hand => {
+    if(!hand || hand.length < 21) return 0;
+    const w = hand[0];
+    return [4,8,12,16,20].map(i => hand[i] ? Math.hypot(hand[i][0]-w[0], hand[i][1]-w[1]) : 0).reduce((a,b)=>a+b,0) / 5;
+  };
+  const lCs = samp.map(f=>center(f.left_hand)).filter(Boolean);
+  const rCs = samp.map(f=>center(f.right_hand)).filter(Boolean);
+  const lSp = samp.map(f=>spread(f.left_hand));
+  const rSp = samp.map(f=>spread(f.right_hand));
+  const useL = lCs.length > sample * 0.35;
+  const useR = rCs.length > sample * 0.35;
+  const avgSp = arr => { const v = arr.filter(x=>x>0); return v.length ? v.reduce((a,b)=>a+b,0)/v.length : 0; };
+  const motion = cs => {
+    if(cs.length < 4) return null;
+    const h = Math.floor(cs.length/2);
+    const avg = a => ({ x: a.reduce((s,c)=>s+c.x,0)/a.length, y: a.reduce((s,c)=>s+c.y,0)/a.length });
+    const fa = avg(cs.slice(0,h)), ba = avg(cs.slice(h));
+    return { dx: ba.x - fa.x, dy: ba.y - fa.y };
+  };
+  const amplitude = cs => {
+    if(cs.length < 4) return 0;
+    const ys = cs.map(c=>c.y);
+    return Math.max(...ys) - Math.min(...ys);
+  };
+  const spreadLabel = v => {
+    if(v < 0.06) return '주먹을 쥐고';
+    if(v < 0.10) return '손가락을 가볍게 구부려';
+    if(v < 0.15) return '손가락을 모아 편 채로';
+    return '손가락을 활짝 펼쳐';
+  };
+  const isMoving = (mv, cs) => {
+    if(!mv) return false;
+    const amp = amplitude(cs);
+    return Math.abs(mv.dx) > 0.025 || Math.abs(mv.dy) > 0.025 || amp > 0.04;
+  };
+  const dirLabel = (mv, cs) => {
+    if(!mv) return null;
+    const {dx, dy} = mv;
+    const amp = amplitude(cs);
+    const parts = [];
+    if(Math.abs(dy) > 0.025) parts.push(dy < 0 ? '위로' : '아래로');
+    if(Math.abs(dx) > 0.025) parts.push(dx < 0 ? '왼쪽으로' : '오른쪽으로');
+    if(!parts.length){ if(amp > 0.04) return '상하로 반복해서 흔들며'; return null; }
+    return parts.join(' ') + ' 움직이며';
+  };
+  const lM = motion(lCs), rM = motion(rCs);
+  const lMoving = isMoving(lM, lCs);
+  const rMoving = isMoving(rM, rCs);
+  const parts = [];
+  if(useR && useL){
+    const ls = avgSp(lSp), rs = avgSp(rSp);
+    if(rMoving && lMoving){
+      const symSp = Math.abs(ls - rs) < 0.04;
+      if(symSp){ parts.push(`양손을 ${spreadLabel(rs)}`); const rDir = dirLabel(rM, rCs); if(rDir) parts.push(rDir); }
+      else { const rDir = dirLabel(rM, rCs); const lDir = dirLabel(lM, lCs); if(rDir) parts.push(`오른손을 ${spreadLabel(rs)} ${rDir}`); if(lDir) parts.push(`왼손을 ${spreadLabel(ls)} ${lDir}`); }
+    } else if(rMoving){ parts.push(`오른손을 ${spreadLabel(rs)}`); const rDir = dirLabel(rM, rCs); if(rDir) parts.push(rDir); }
+    else if(lMoving){ parts.push(`왼손을 ${spreadLabel(ls)}`); const lDir = dirLabel(lM, lCs); if(lDir) parts.push(lDir); }
+    else { const symSp = Math.abs(ls - rs) < 0.04; if(symSp) parts.push(`양손을 ${spreadLabel(rs)} 고정된 자세로`); else parts.push(`오른손은 ${spreadLabel(rs)}, 왼손은 ${spreadLabel(ls)} 고정된 자세로`); }
+    parts.push('수어를 표현합니다.');
+  } else if(useR){
+    parts.push(`오른손을 ${spreadLabel(avgSp(rSp))}`);
+    const rDir = dirLabel(rM, rCs); if(rDir) parts.push(rDir);
+    parts.push('수어를 표현합니다.');
+  } else if(useL){
+    parts.push(`왼손을 ${spreadLabel(avgSp(lSp))}`);
+    const lDir = dirLabel(lM, lCs); if(lDir) parts.push(lDir);
+    parts.push('수어를 표현합니다.');
+  } else {
+    return '손 동작 정보를 분석하기 어렵습니다.';
+  }
+  return parts.join(' ');
+}
+
+
+function fetchWordDescription(wordName, wordId, frames){
+  const cacheKey = wordId || wordName;
+  if(descCache[cacheKey]){
+    wvDescHow.textContent = descCache[cacheKey];
+    wvDescHow.classList.remove('skeleton');
+    return;
+  }
+  const how = generateSignDescription(wordName, frames);
+  descCache[cacheKey] = how;
+  wvDescHow.textContent = how;
+  wvDescHow.classList.remove('skeleton');
+}
+
+function getCatClass(category) {
+  if (!category || category === 'null') return '';
+  const c = category;
+  if (['감정','성격','심리','태도','행동','표현','동작','인격'].some(k => c.includes(k)))                     return 'cat-yellow';
+  if (['건강','의료','병원','약'].some(k => c.includes(k)))                                                   return 'cat-mint';
+  if (['사람','인물','가족','인사','신체'].some(k => c.includes(k)))                                          return 'cat-peach';
+  if (['스포츠','운동','취미','문화','예술','음악','영화','게임','여행','놀이'].some(k => c.includes(k)))     return 'cat-lavender';
+  if (['음식','요리','식품','식재료','식사','간식','음료'].some(k => c.includes(k)))                          return 'cat-coral';
+  if (['일상','생활','집','주거','의복','옷','날씨','계절','시간','물건'].some(k => c.includes(k)))           return 'cat-pink';
+  return '';
+}
+
+function renderCards(words) {
+  resultsGrid.innerHTML = '';
+  if (!words.length) {
+    resultsGrid.innerHTML = '<div class="no-result">검색 결과가 없습니다.</div>';
+    return;
+  }
+  words.forEach(item => {
+    const desc = item.category && item.category !== 'null' ? item.category : '';
+    const card = document.createElement('div');
+    const catCls = getCatClass(item.category);
+    card.className = 'result-card' + (catCls ? ' ' + catCls : '');
+    card.innerHTML = `
+      <div class="result-word">${item.word_name}</div>
+      <div class="result-desc">${desc}</div>
+    `;
+    card.addEventListener('click', () => openDictionaryViewer(item));
+    resultsGrid.appendChild(card);
+  });
+}
+
+// 대분류 그룹 정의 — loadWords와 initCategories가 공유
+const CATEGORY_GROUPS = [
+  { label: '일상 · 생활',   match: ['일상', '생활', '가족', '사람', '인사', '신체', '집', '주거', '의복', '옷', '날씨', '계절', '시간', '물건'] },
+  { label: '감정 · 행동',   match: ['감정', '성격', '심리', '태도', '행동', '표현', '동작', '인격'] },
+  { label: '음식 · 건강',   match: ['음식', '요리', '식품', '식재료', '건강', '의료', '병원', '약', '음료', '식사', '간식'] },
+  { label: '교육 · 직업',   match: ['학교', '교육', '공부', '직업', '직장', '업무', '경제', '금융', '돈', '수업', '학습'] },
+  { label: '사회 · 공공',   match: ['사회', '정치', '법', '군대', '경찰', '소방', '공공', '정부', '국가', '나라', '행정'] },
+  { label: '자연 · 동식물', match: ['자연', '동물', '식물', '환경', '지형', '바다', '산', '강', '꽃', '나무', '생물'] },
+  { label: '스포츠 · 문화', match: ['스포츠', '운동', '취미', '여가', '문화', '예술', '음악', '영화', '게임', '여행', '놀이'] },
+  { label: '교통 · 장소',   match: ['교통', '장소', '지역', '건물', '도시', '지하철', '버스', '자동차', '비행기', '위치'] },
+];
+
+// 세부 카테고리 → 대분류 매핑
+function assignGroup(cat) {
+  if (!cat) return '기타';
+  for (const g of CATEGORY_GROUPS) {
+    if (g.match.some(k => cat === k || cat.includes(k) || k.includes(cat))) return g.label;
+  }
+  return '기타';
+}
+
+// 대분류 버튼 클릭 시 캐시에서 클라이언트 필터링
+function loadWords(groupLabel) {
+  document.querySelectorAll('.cat-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.cat === groupLabel);
+  });
+  if (!groupLabel) { renderCards(allWordsCache); return; }
+  renderCards(allWordsCache.filter(w => assignGroup(w.category) === groupLabel));
+}
+
+async function initCategories() {
+  resultsGrid.innerHTML = '<div class="no-result">단어 데이터 불러오는 중...</div>';
+  try {
+    const res = await fetch(`${API_BASE}/words/?limit=3000`, { headers: NGROK_HEADERS });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    allWordsCache = await res.json();
+    renderCards(allWordsCache);
+  } catch (e) {
+    console.error('[initCategories]', e);
+    resultsGrid.innerHTML = '<div class="no-result">⚠ 데이터를 불러올 수 없습니다. 서버를 확인하세요.</div>';
+  }
+}
+
+async function doSearch() {
+  const query = document.getElementById('searchInput').value.trim();
+  if (!query) { loadWords(''); return; }
+
+  // 검색 시 카테고리 버튼 active 해제
+  document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
+
+  resultsGrid.innerHTML = '<div class="no-result">검색 중...</div>';
+  try {
+    const res = await fetch(`${API_BASE}/words/search/${encodeURIComponent(query)}`, {
+      headers: NGROK_HEADERS
+    });
+    if (!res.ok) throw new Error('Search failed');
+    const matched = await res.json();
+
+    if (!matched.length) {
+      resultsGrid.innerHTML = `<div class="no-result">'${query}'에 대한 검색 결과가 없습니다.</div>`;
+      return;
+    }
+
+    // 정확도 우선순위 정렬
+    matched.sort((a, b) => {
+      const score = name => {
+        if (name === query) return 0;
+        if (name.startsWith(query)) return 1;
+        if (name.includes(query)) return 2;
+        return 3;
+      };
+      const sa = score(a.word_name), sb = score(b.word_name);
+      if (sa !== sb) return sa - sb;
+      return a.word_name.length - b.word_name.length || a.word_name.localeCompare(b.word_name, 'ko');
+    });
+
+    renderCards(matched);
+  } catch (e) {
+    resultsGrid.innerHTML = '<div class="no-result">⚠ 검색 중 오류가 발생했습니다. 서버를 확인하세요.</div>';
+  }
+}
+
+document.getElementById('searchBtn').addEventListener('click', doSearch);
+document.getElementById('searchInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doSearch();
+});
+
+document.getElementById('categoryFilter').addEventListener('click', e => {
+  const btn = e.target.closest('.cat-btn');
+  if (!btn) return;
+  document.getElementById('searchInput').value = '';
+  loadWords(btn.dataset.cat);
+});
+
+// 초기 로딩: 전체 단어를 한 번 가져와 카테고리 버튼 동적 생성
+initCategories();
+
+// URL 파라미터 자동 실행 (오답 노트 → 사전 직행 시 즉시 아바타 재생)
+(async function autoOpenFromQuery() {
+  const params = new URLSearchParams(window.location.search);
+  const wid = params.get('word_id');
+  if (!wid) return;
+  try {
+    const res = await fetch(`${API_BASE}/words/${wid}`, { headers: NGROK_HEADERS });
+    if (!res.ok) return;
+    const detail = await res.json();
+    if (detail && detail.word_id) openDictionaryViewer(detail);
+  } catch (e) {
+    console.error('[autoOpenFromQuery]', e);
+  }
+})();
+
+async function openDictionaryViewer(item) {
+  wvViewer.classList.add('open');
+  wvWordName.textContent = item.word_name;
+
+  wvDescMeaning.textContent = item.category && item.category !== 'null'
+    ? item.category
+    : `한국 수어에서 '${item.word_name}'을(를) 나타내는 표현입니다.`;
+  wvDescHow.textContent = '';
+  wvDescHow.classList.add('skeleton');
+
+  // 단어 상세 정보 비동기 요청 (GCS 로딩과 병렬 실행, 이미 description 있으면 스킵)
+  if (item.description) {
+    wvDescMeaning.textContent = item.description;
+  } else if (item.word_id) {
+    fetch(`${API_BASE}/words/${item.word_id}`, { headers: NGROK_HEADERS })
+      .then(r => r.ok ? r.json() : null)
+      .then(detail => {
+        if (detail && detail.description) wvDescMeaning.textContent = detail.description;
+        if (detail && detail.category && detail.category !== 'null' && !(detail.description))
+          wvDescMeaning.textContent = detail.category;
+      })
+      .catch(() => {});
+  }
+
+  wvLoading.style.display = 'flex';
+  wvLoading.innerHTML = '<div class="wv-spinner"></div><span>수어 데이터 불러오는 중...</span>';
+
+  if (wvPlayer) { wvPlayer.destroy(); wvPlayer = null; }
+
+  // gcs_path 우선, 없으면 word_id로 파일명 조합
+  const gcsUrl = item.gcs_path
+    ? `${GCS_BASE_URL}/${item.gcs_path}`
+    : item.word_id
+      ? `${GCS_BASE_URL}/WORD${String(item.word_id).padStart(4, '0')}.json`
+      : null;
+
+  if (!gcsUrl) {
+    wvLoading.innerHTML = '<span style="color:#f55c8a">⚠ 이 단어에 대한 모션 데이터가 없습니다.</span>';
+    wvDescHow.classList.remove('skeleton');
+    wvDescHow.textContent = '모션 데이터가 없어 동작을 분석할 수 없습니다.';
+    return;
+  }
+
+  try {
+    const res = await fetch(gcsUrl);
+    if (!res.ok) throw new Error('Data load failed');
+    const data = await res.json();
+
+    wvLoading.style.display = 'none';
+    wvPlayer = new AvatarPlayer(wvCanvas, wvBar, wvPlayBtn, wvFrame);
+    wvPlayer.setSpeed(currentSpeed);
+    wvPlayer.load(data);
+
+    fetchWordDescription(item.word_name, item.word_id, data.frames);
+  } catch (e) {
+    wvLoading.innerHTML = '<span style="color:#f55c8a">⚠ 데이터를 불러올 수 없습니다. 네트워크를 확인하세요.</span>';
+    wvDescHow.classList.remove('skeleton');
+    wvDescHow.textContent = '데이터 로드 실패로 동작을 분석할 수 없습니다.';
+  }
+}
+
+const wvSpeedBtns = document.getElementById('wvSpeedBtns');
+const SPEED_STEPS = [2, 4, 6, 10, 16];
+let currentSpeed = 6;
+
+function applySpeed(step) {
+  currentSpeed = SPEED_STEPS[step - 1];
+  wvSpeedBtns.querySelectorAll('.wv-spd-btn').forEach(btn => {
+    btn.classList.toggle('active', Number(btn.dataset.step) === step);
+  });
+  if (wvPlayer) wvPlayer.setSpeed(currentSpeed);
+}
+
+wvSpeedBtns.addEventListener('click', e => {
+  const btn = e.target.closest('.wv-spd-btn');
+  if (btn) applySpeed(Number(btn.dataset.step));
+});
+
+wvBack.addEventListener('click', () => {
+  wvViewer.classList.remove('open');
+  if(wvPlayer) { wvPlayer.destroy(); wvPlayer = null; }
+});
+wvPlayBtn.addEventListener('click', () => { if(wvPlayer) wvPlayer.toggle(); });
+wvReplayBtn.addEventListener('click', () => { if(wvPlayer) wvPlayer.replay(); });
+
+document.addEventListener('keydown', e => {
+  if (!wvViewer.classList.contains('open') || !wvPlayer) return;
+  if(e.code === 'Space') { e.preventDefault(); wvPlayer.toggle(); }
+  if(e.key === 'r' || e.key === 'R') { wvPlayer.replay(); }
+  if(e.key === 'Escape') { wvBack.click(); }
+});
+
+// ── 사이드바 위젯 (홈페이지와 동일 로직) ──
+const RANKS = [
+  { emoji: '🌱', name: '수어 입문자', minTotal: 0,  minAcc: 0   },
+  { emoji: '🥉', name: '수어 도전자', minTotal: 5,  minAcc: 40  },
+  { emoji: '🥈', name: '수어 학습자', minTotal: 10, minAcc: 60  },
+  { emoji: '🥇', name: '수어 마스터', minTotal: 15, minAcc: 80  },
+  { emoji: '💎', name: '수어 챔피언', minTotal: 20, minAcc: 95  },
+  { emoji: '👑', name: '수어 천재',   minTotal: 20, minAcc: 100 },
+];
+
+function _getUserRank() {
+  const qs = JSON.parse(localStorage.getItem('quiz_stats') || '{"correct":0,"total":0}');
+  const total = qs.total || 0;
+  const accuracy = total > 0 ? Math.round(qs.correct / qs.total * 100) : 0;
+  if (total >= 20 && accuracy === 100) return { emoji: '👑', name: '수어 천재' };
+  if (total >= 20 && accuracy >= 95)  return { emoji: '💎', name: '수어 챔피언' };
+  if (total >= 15 && accuracy >= 80)  return { emoji: '🥇', name: '수어 마스터' };
+  if (total >= 10 && accuracy >= 60)  return { emoji: '🥈', name: '수어 학습자' };
+  if (total >= 5  && accuracy >= 40)  return { emoji: '🥉', name: '수어 도전자' };
+  return { emoji: '🌱', name: '수어 입문자' };
+}
+
+function _updateRankChip() {
+  const chip = document.getElementById('userRankChip');
+  if (!chip) return;
+  const rank = _getUserRank();
+  chip.textContent = `${rank.emoji} ${rank.name}`;
+  _updateRankBanner();
+}
+
+function _updateRankBanner() {
+  const qs = JSON.parse(localStorage.getItem('quiz_stats') || '{"correct":0,"total":0}');
+  const total = qs.total || 0;
+  const accuracy = total > 0 ? Math.round(qs.correct / qs.total * 100) : 0;
+  let rankIdx = 0;
+  for (let i = RANKS.length - 1; i >= 0; i--) {
+    if (total >= RANKS[i].minTotal && accuracy >= RANKS[i].minAcc) { rankIdx = i; break; }
+  }
+  const next = RANKS[rankIdx + 1];
+  const fillEl = document.getElementById('promoProgressFill');
+  const textEl = document.getElementById('promoProgressNext');
+  if (!fillEl) return;
+  if (!next) {
+    fillEl.style.width = '100%';
+    if (textEl) textEl.textContent = '🏆 모든 등급 달성!';
+    return;
+  }
+  const totalPct = next.minTotal > 0 ? Math.min(100, Math.round(total / next.minTotal * 100)) : 100;
+  const accPct   = next.minAcc   > 0 ? Math.min(100, Math.round(accuracy / next.minAcc * 100)) : 100;
+  fillEl.style.width = Math.min(totalPct, accPct) + '%';
+  if (textEl) textEl.textContent = `다음 등급까지 ${100 - Math.min(totalPct, accPct)}% 남았어요`;
+}
+
+(function initSidebar() {
+  const nameEl = document.getElementById('userName');
+  if (nameEl) nameEl.textContent = localStorage.getItem('user_name') || '친구';
+  _updateRankChip();
+})();
+</script>
+<script src="chatbot-overlay.js"></script>
+</body>
+</html>

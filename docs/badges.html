@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>나의 뱃지 — AI 수어 학습 플랫폼</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f3eee5;
+      --sidebar-bg: #e6e3f1;
+      --accent: #6a5cd6;
+      --accent-hover: #5648c0;
+      --text-dark: #1a1a2e;
+      --text-mid: #3d3d5c;
+      --text-muted: #7b7b9a;
+      --text-on-soft: #4a4060;
+      --border: #e0dff0;
+      --card-cream: #f9f6f0;
+      --card-soft: #ede9f8;
+      --shadow-card: 0 2px 12px rgba(40,30,80,0.07);
+      --shadow-hover: 0 6px 24px rgba(40,30,80,0.14);
+      --r-sm: 10px; --r-md: 14px; --r-lg: 18px; --r-xl: 24px;
+      --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-plain: box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      height: 100vh; overflow: hidden;
+      font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", Arial, sans-serif;
+      background: var(--bg); color: var(--text-dark); -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── 앱 셸 ── */
+    .app-shell { display: flex; height: 100vh; overflow: hidden; }
+
+    /* ── 사이드바 ── */
+    .sidebar {
+      background: var(--sidebar-bg); border-radius: var(--r-lg);
+      padding: 22px 18px; display: flex; flex-direction: column; gap: 14px;
+      width: 260px; height: 100%; flex-shrink: 0; overflow-y: auto;
+    }
+    .brand-block { display: flex; align-items: center; gap: 10px; padding: 0 4px; }
+    .brand-mark {
+      width: 38px; height: 38px; background: var(--text-dark); border-radius: 11px;
+      display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;
+    }
+    .brand-name { font-size: 16px; font-weight: 900; color: var(--text-dark); letter-spacing: -0.02em; line-height: 1.2; }
+    .brand-sub  { font-size: 11px; color: var(--text-muted); font-weight: 600; margin-top: 1px; }
+    .user-block {
+      background: white; border-radius: var(--r-md); padding: 12px 14px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .user-avatar {
+      width: 34px; height: 34px; background: var(--sidebar-bg); border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; color: var(--text-mid); flex-shrink: 0;
+    }
+    .user-greeting-line { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+    .user-name-line { font-size: 14px; font-weight: 800; color: var(--text-dark); letter-spacing: -0.01em; line-height: 1.3; }
+    .side-nav { display: flex; flex-direction: column; gap: 1px; margin-top: 2px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 11px; padding: 8px 12px;
+      border-radius: 10px; font-size: 13px; font-weight: 600;
+      color: var(--text-mid); text-decoration: none; transition: var(--transition-plain);
+    }
+    .nav-item:hover  { background: rgba(255,255,255,0.55); color: var(--text-dark); }
+    .nav-item.active { background: var(--text-dark); color: white; font-weight: 700; }
+    .nav-item svg { flex-shrink: 0; }
+    .promo-card {
+      background: linear-gradient(135deg, #fad6c0, #f4b8a3);
+      border-radius: var(--r-md); padding: 16px 16px 14px; margin-top: auto;
+      position: relative; overflow: hidden; text-decoration: none; color: var(--text-dark); display: block;
+    }
+    .promo-card::before {
+      content: ''; position: absolute; right: -20px; bottom: -20px;
+      width: 100px; height: 100px;
+      background-image: radial-gradient(circle, rgba(255,255,255,0.35) 1.2px, transparent 1.2px);
+      background-size: 12px 12px; border-radius: 50%; pointer-events: none;
+    }
+    .promo-label { font-size: 10px; font-weight: 800; color: rgba(40,30,20,0.55); letter-spacing: 0.08em; text-transform: uppercase; }
+    .promo-rank  { font-size: 15px; font-weight: 900; color: var(--text-dark); margin-top: 4px; letter-spacing: -0.02em; position: relative; z-index: 1; }
+    .promo-cta   { margin-top: 10px; font-size: 11px; font-weight: 700; color: var(--text-dark); position: relative; z-index: 1; }
+    .promo-progress-track { height: 6px; background: rgba(255,255,255,0.45); border-radius: 99px; overflow: hidden; margin-top: 10px; position: relative; z-index: 1; }
+    .promo-progress-fill  { height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.6s ease; width: 0%; }
+    .promo-progress-next  { font-size: 10px; font-weight: 700; color: rgba(40,30,20,0.6); margin-top: 5px; position: relative; z-index: 1; }
+
+    /* ── 메인 영역 ── */
+    .badges-main {
+      flex: 1; overflow-y: auto; padding: 28px 28px 48px;
+      display: flex; flex-direction: column; gap: 20px;
+    }
+    .badges-main::-webkit-scrollbar { width: 5px; }
+    .badges-main::-webkit-scrollbar-thumb { background: var(--border); border-radius: 5px; }
+
+    /* ── 등급 히어로 카드 ── */
+    .rank-hero {
+      background: var(--card-soft); border-radius: var(--r-xl);
+      padding: 32px 36px; position: relative; overflow: hidden; flex-shrink: 0;
+    }
+    .rank-hero::before {
+      content: ''; position: absolute; right: -40px; bottom: -40px;
+      width: 200px; height: 200px;
+      background-image: radial-gradient(circle, rgba(106,92,214,0.18) 1.4px, transparent 1.4px);
+      background-size: 14px 14px; border-radius: 50%; pointer-events: none;
+    }
+    .rank-hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.75); color: var(--text-dark);
+      border-radius: 100px; padding: 6px 14px;
+      font-size: 12px; font-weight: 800; margin-bottom: 20px; letter-spacing: 0.02em;
+    }
+    .rank-card-inner { display: flex; align-items: flex-start; gap: 28px; flex-wrap: wrap; position: relative; z-index: 1; }
+    .rank-emoji-big { font-size: 68px; line-height: 1; flex-shrink: 0; }
+    .rank-info { flex: 1; min-width: 220px; }
+    .rank-label { font-size: 11px; font-weight: 800; color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+    .rank-name  { font-size: 24px; font-weight: 900; color: var(--text-dark); margin-bottom: 4px; letter-spacing: -0.02em; }
+    .rank-sub   { font-size: 14px; color: var(--text-on-soft); margin-bottom: 20px; line-height: 1.6; }
+
+    .rank-stats { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
+    .rank-stat-item {
+      background: rgba(255,255,255,0.7); border: 1px solid rgba(106,92,214,0.12);
+      border-radius: var(--r-md); padding: 12px 20px; text-align: center; min-width: 90px;
+    }
+    .rank-stat-val { font-size: 22px; font-weight: 900; color: var(--text-dark); }
+    .rank-stat-lbl { font-size: 11px; color: var(--text-muted); font-weight: 600; margin-top: 3px; }
+
+    /* 진행률 */
+    .next-rank-title {
+      font-size: 11px; font-weight: 800; color: var(--text-muted);
+      letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px;
+    }
+    .progress-row { margin-bottom: 12px; }
+    .progress-label {
+      display: flex; justify-content: space-between;
+      font-size: 12px; font-weight: 600; color: var(--text-mid); margin-bottom: 6px;
+    }
+    .progress-bar { height: 7px; background: rgba(255,255,255,0.55); border-radius: 99px; overflow: hidden; }
+    .progress-fill {
+      height: 100%; border-radius: 99px; background: var(--accent);
+      transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .progress-fill.green { background: #34d399; }
+    .already-max {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 15px; font-weight: 700; color: var(--text-dark);
+    }
+
+    /* ── 뱃지 갤러리 ── */
+    .section-header { display: flex; align-items: center; }
+    .section-title { font-size: 18px; font-weight: 900; color: var(--text-dark); letter-spacing: -0.02em; }
+
+    .badge-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    @media (max-width: 640px) { .badge-grid { grid-template-columns: repeat(2, 1fr); } }
+
+    .badge-card {
+      background: white; border: 1px solid var(--border); border-radius: var(--r-md);
+      padding: 28px 20px 22px; box-shadow: var(--shadow-card);
+      text-align: center; transition: var(--transition-plain);
+      position: relative; overflow: visible;
+    }
+    .badge-card.earned:hover { box-shadow: var(--shadow-hover); border-color: transparent; }
+    .badge-card.locked { filter: grayscale(0.85); opacity: 0.45; }
+    .badge-card.current {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(106,92,214,0.12), var(--shadow-hover);
+    }
+
+    .badge-current-label {
+      position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
+      background: var(--accent); color: white; border-radius: 99px;
+      font-size: 10px; font-weight: 700; padding: 3px 12px; white-space: nowrap;
+    }
+    .badge-status-mark {
+      position: absolute; top: 10px; right: 10px;
+      width: 22px; height: 22px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 900;
+    }
+    .badge-status-mark.earned { background: var(--accent); color: white; }
+    .badge-status-mark.locked { background: var(--border); color: var(--text-muted); font-size: 12px; }
+
+    .badge-emoji { font-size: 44px; margin-bottom: 10px; line-height: 1; }
+    .badge-grade { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 4px; }
+    .badge-name  { font-size: 15px; font-weight: 800; color: var(--text-dark); margin-bottom: 8px; }
+    .badge-cond  { font-size: 11px; color: var(--text-muted); line-height: 1.6; }
+    .badge-cond.earned { color: var(--text-on-soft); }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- ═══ 좌측 사이드바 ═══ -->
+  <aside class="sidebar">
+    <div class="brand-block">
+      <div class="brand-mark">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+      </div>
+      <div>
+        <div class="brand-name">SORI</div>
+        <div class="brand-sub">AI 수어 학습</div>
+      </div>
+    </div>
+    <div class="user-block">
+      <div class="user-avatar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <div>
+        <div class="user-greeting-line">반가워요</div>
+        <div class="user-name-line"><span id="userName">친구</span>님</div>
+      </div>
+    </div>
+    <nav class="side-nav">
+      <a class="nav-item" href="sign_language_homepage.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        홈
+      </a>
+      <a class="nav-item" href="education.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        교육
+      </a>
+      <a class="nav-item" href="quiz.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        퀴즈
+      </a>
+      <a class="nav-item" href="dictionary.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        사전
+      </a>
+      <a class="nav-item" href="chatbot.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        챗봇
+      </a>
+      <a class="nav-item" href="translation.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        수어 인식
+      </a>
+      <a class="nav-item active" href="badges.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+        뱃지
+      </a>
+    </nav>
+    <a class="promo-card" href="badges.html">
+      <div class="promo-label">현재 등급</div>
+      <div class="promo-rank" id="promoRankChip">🌱 수어 입문자</div>
+      <div class="promo-progress-track">
+        <div class="promo-progress-fill" id="promoProgressFill"></div>
+      </div>
+      <div class="promo-progress-next" id="promoProgressNext">다음 등급까지 100% 남았어요</div>
+      <div class="promo-cta">자세히 보기 →</div>
+    </a>
+  </aside>
+
+  <!-- ═══ 메인 영역 ═══ -->
+  <main class="badges-main">
+
+    <!-- 현재 등급 히어로 카드 -->
+    <div class="rank-hero">
+      <div class="rank-hero-badge">🏅 나의 뱃지</div>
+      <div class="rank-card-inner">
+        <div class="rank-emoji-big" id="rankEmoji">🎯</div>
+        <div class="rank-info">
+          <div class="rank-label">현재 등급</div>
+          <div class="rank-name" id="rankName">등급 없음</div>
+          <div class="rank-sub" id="rankSub">퀴즈를 1회 이상 풀면 비기너 등급을 받을 수 있어요!</div>
+          <div class="rank-stats">
+            <div class="rank-stat-item">
+              <div class="rank-stat-val" id="statTotal">0회</div>
+              <div class="rank-stat-lbl">퀴즈 응시</div>
+            </div>
+            <div class="rank-stat-item">
+              <div class="rank-stat-val" id="statAcc">0%</div>
+              <div class="rank-stat-lbl">정답률</div>
+            </div>
+            <div class="rank-stat-item">
+              <div class="rank-stat-val" id="statWords">0개</div>
+              <div class="rank-stat-lbl">학습 단어</div>
+            </div>
+          </div>
+          <div id="nextRankSection"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 뱃지 갤러리 -->
+    <div class="section-header">
+      <div class="section-title">전체 뱃지</div>
+    </div>
+    <div class="badge-grid" id="badgeGrid"></div>
+
+  </main>
+</div>
+
+  <script>
+    // ── 사이드바 위젯 ──
+    const RANKS = [
+      { emoji: '🌱', name: '수어 입문자', minTotal: 0,  minAcc: 0   },
+      { emoji: '🥉', name: '수어 도전자', minTotal: 5,  minAcc: 40  },
+      { emoji: '🥈', name: '수어 학습자', minTotal: 10, minAcc: 60  },
+      { emoji: '🥇', name: '수어 마스터', minTotal: 15, minAcc: 80  },
+      { emoji: '💎', name: '수어 챔피언', minTotal: 20, minAcc: 95  },
+      { emoji: '👑', name: '수어 천재',   minTotal: 20, minAcc: 100 },
+    ];
+    function _getUserRank() {
+      const qs = JSON.parse(localStorage.getItem('quiz_stats') || '{"correct":0,"total":0}');
+      const total = qs.total || 0;
+      const accuracy = total > 0 ? Math.round(qs.correct / qs.total * 100) : 0;
+      let rank = RANKS[0];
+      for (const r of RANKS) { if (total >= r.minTotal && accuracy >= r.minAcc) rank = r; }
+      return { rank, total, accuracy };
+    }
+    function _updateRankBanner() {
+      const fillEl = document.getElementById('promoProgressFill');
+      const textEl = document.getElementById('promoProgressNext');
+      if (!fillEl) return;
+      const { rank, total, accuracy } = _getUserRank();
+      const idx = RANKS.indexOf(rank);
+      if (idx === RANKS.length - 1) {
+        fillEl.style.width = '100%';
+        if (textEl) textEl.textContent = '🏆 모든 등급 달성!';
+        return;
+      }
+      const next = RANKS[idx + 1];
+      const totalPct = next.minTotal > 0 ? Math.min(100, Math.round(total / next.minTotal * 100)) : 100;
+      const accPct   = next.minAcc   > 0 ? Math.min(100, Math.round(accuracy / next.minAcc * 100)) : 100;
+      fillEl.style.width = Math.min(totalPct, accPct) + '%';
+      if (textEl) textEl.textContent = `다음 등급까지 ${100 - Math.min(totalPct, accPct)}% 남았어요`;
+    }
+    function _updateRankChip() {
+      const chip = document.getElementById('promoRankChip');
+      if (!chip) return;
+      const { rank } = _getUserRank();
+      chip.textContent = `${rank.emoji} ${rank.name}`;
+      _updateRankBanner();
+    }
+    (function initSidebar() {
+      const nameEl = document.getElementById('userName');
+      if (nameEl) nameEl.textContent = localStorage.getItem('user_name') || '친구';
+      _updateRankChip();
+    })();
+  </script>
+
+  <script>
+    const BADGE_DEFS = [
+      {
+        key: 'beginner',      emoji: '🌱', grade: '비기너',
+        name: '수어 입문자',
+        cond: '퀴즈 1회 이상 응시\n정답률 무관',
+        minCount: 0, minAcc: 0
+      },
+      {
+        key: 'bronze_quiz',   emoji: '🥉', grade: '브론즈',
+        name: '수어 도전자',
+        cond: '퀴즈 5회 이상 응시\n정답률 40% 이상',
+        minCount: 5, minAcc: 40
+      },
+      {
+        key: 'silver_quiz',   emoji: '🥈', grade: '실버',
+        name: '수어 학습자',
+        cond: '퀴즈 10회 이상 응시\n정답률 60% 이상',
+        minCount: 10, minAcc: 60
+      },
+      {
+        key: 'gold_quiz',     emoji: '🥇', grade: '골드',
+        name: '수어 마스터',
+        cond: '퀴즈 15회 이상 응시\n정답률 80% 이상',
+        minCount: 15, minAcc: 80
+      },
+      {
+        key: 'platinum_quiz', emoji: '💎', grade: '플래티넘',
+        name: '수어 챔피언',
+        cond: '퀴즈 20회 이상 응시\n정답률 95% 이상',
+        minCount: 20, minAcc: 95
+      },
+      {
+        key: 'perfect_quiz',  emoji: '👑', grade: '퍼펙트',
+        name: '수어 천재',
+        cond: '퀴즈 20회 이상 응시\n정답률 100%',
+        minCount: 20, minAcc: 100
+      },
+    ];
+
+    function getCurrentRankIdx(total, accuracy) {
+      for (let i = BADGE_DEFS.length - 1; i >= 0; i--) {
+        const b = BADGE_DEFS[i];
+        if (total >= b.minCount && accuracy >= b.minAcc) return i;
+      }
+      return -1;
+    }
+
+    function renderPage() {
+      const name   = localStorage.getItem('user_name') || '사용자';
+      const userId = localStorage.getItem('user_id');
+      document.getElementById('userName').textContent = name;
+
+      if (!userId) {
+        window.location.href = 'sign_language_homepage.html';
+        return;
+      }
+
+      const qs       = JSON.parse(localStorage.getItem('quiz_stats')    || '{"correct":0,"total":0}');
+      const qw       = JSON.parse(localStorage.getItem('quiz_word_ids') || '[]');
+      const total    = qs.total || 0;
+      const accuracy = total > 0 ? Math.round(qs.correct / qs.total * 100) : 0;
+
+      document.getElementById('statTotal').textContent = total + '회';
+      document.getElementById('statAcc').textContent   = accuracy + '%';
+      document.getElementById('statWords').textContent = qw.length + '개';
+
+      const rankIdx = getCurrentRankIdx(total, accuracy);
+
+      /* ── 현재 등급 표시 ── */
+      if (rankIdx >= 0) {
+        const r = BADGE_DEFS[rankIdx];
+        document.getElementById('rankEmoji').textContent = r.emoji;
+        document.getElementById('rankName').textContent  = `${r.grade} — ${r.name}`;
+        document.getElementById('rankSub').textContent   =
+          rankIdx === BADGE_DEFS.length - 1
+            ? '🎉 최고 등급 달성! 모든 뱃지를 획득했습니다.'
+            : '아래 진행 상황을 확인하고 다음 등급에 도전해보세요.';
+      }
+
+      /* ── 다음 등급 진행률 ── */
+      const nextSection = document.getElementById('nextRankSection');
+      const nextIdx = rankIdx + 1;
+
+      if (nextIdx < BADGE_DEFS.length) {
+        const next     = BADGE_DEFS[nextIdx];
+        const cntPct   = Math.min(100, total > 0 ? Math.round(total / next.minCount * 100) : 0);
+        const accPct   = next.minAcc > 0
+          ? Math.min(100, Math.round(accuracy / next.minAcc * 100))
+          : 100;
+        const cntLeft  = Math.max(0, next.minCount - total);
+        const accLeft  = Math.max(0, next.minAcc - accuracy);
+
+        nextSection.innerHTML = `
+          <div class="next-rank-title">
+            다음 등급: ${next.emoji} ${next.grade} — ${next.name}
+          </div>
+          <div class="progress-row">
+            <div class="progress-label">
+              <span>퀴즈 응시 횟수</span>
+              <span>${total} / ${next.minCount}회${cntLeft > 0 ? ` (${cntLeft}회 더 필요)` : ' ✓'}</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width:${cntPct}%"></div>
+            </div>
+          </div>
+          ${next.minAcc > 0 ? `
+          <div class="progress-row">
+            <div class="progress-label">
+              <span>정답률</span>
+              <span>${accuracy}% / ${next.minAcc}% 필요${accLeft > 0 ? ` (${accLeft}%p 더 필요)` : ' ✓'}</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill green" style="width:${accPct}%"></div>
+            </div>
+          </div>` : ''}
+        `;
+      } else if (rankIdx === BADGE_DEFS.length - 1) {
+        nextSection.innerHTML =
+          `<div class="already-max">🏆 축하합니다! 최고 등급을 달성했습니다.</div>`;
+      }
+
+      /* ── 뱃지 갤러리 렌더 ── */
+      const grid = document.getElementById('badgeGrid');
+      grid.innerHTML = '';
+
+      BADGE_DEFS.forEach((b, i) => {
+        const isEarned  = i <= rankIdx;
+        const isCurrent = i === rankIdx;
+
+        const card = document.createElement('div');
+        card.className = [
+          'badge-card',
+          isEarned  ? 'earned' : 'locked',
+          isCurrent ? 'current' : ''
+        ].join(' ').trim();
+
+        card.innerHTML = `
+          ${isCurrent ? '<div class="badge-current-label">현재 등급</div>' : ''}
+          <div class="badge-status-mark ${isEarned ? 'earned' : 'locked'}">
+            ${isEarned ? '✓' : '🔒'}
+          </div>
+          <div class="badge-emoji">${b.emoji}</div>
+          <div class="badge-grade">${b.grade}</div>
+          <div class="badge-name">${b.name}</div>
+          <div class="badge-cond ${isEarned ? 'earned' : ''}">${b.cond.replace('\n', '<br>')}</div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function handleLogout() {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('user_id');
+      localStorage.removeItem('user_name');
+      localStorage.removeItem('quiz_stats');
+      localStorage.removeItem('quiz_word_ids');
+      window.location.href = 'sign_language_homepage.html';
+    }
+
+    renderPage();
+  </script>
+</body>
+</html>

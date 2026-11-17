@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>수어 실시간 인식</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f3eee5;
+      --sidebar-bg: #e6e3f1;
+      --accent: #6a5cd6;
+      --accent-hover: #5648c0;
+      --text-dark: #1a1a2e;
+      --text-mid: #3d3d5c;
+      --text-muted: #7b7b9a;
+      --text-on-soft: #4a4060;
+      --border: #e0dff0;
+      --card-cream: #f9f6f0;
+      --card-soft: #ede9f8;
+      --shadow-card: 0 2px 12px rgba(40,30,80,0.07);
+      --shadow-hover: 0 6px 24px rgba(40,30,80,0.14);
+      --r-sm: 10px; --r-md: 14px; --r-lg: 18px; --r-xl: 24px;
+      --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-plain: box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      height: 100vh; overflow: hidden;
+      font-family: "Noto Sans KR", sans-serif;
+      background: var(--bg); color: var(--text-dark);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── 앱 셸 ── */
+    .app-shell { display: flex; height: 100vh; overflow: hidden; }
+
+    /* ── 사이드바 ── */
+    .sidebar {
+      background: var(--sidebar-bg); border-radius: var(--r-lg);
+      padding: 22px 18px; display: flex; flex-direction: column; gap: 14px;
+      width: 260px; height: 100%; flex-shrink: 0; overflow-y: auto;
+    }
+    .brand-block { display: flex; align-items: center; gap: 10px; padding: 0 4px; }
+    .brand-mark {
+      width: 38px; height: 38px; background: var(--text-dark); border-radius: 11px;
+      display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;
+    }
+    .brand-name { font-size: 16px; font-weight: 900; color: var(--text-dark); letter-spacing: -0.02em; line-height: 1.2; }
+    .brand-sub  { font-size: 11px; color: var(--text-muted); font-weight: 600; margin-top: 1px; }
+    .user-block {
+      background: white; border-radius: var(--r-md); padding: 12px 14px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .user-avatar {
+      width: 34px; height: 34px; background: var(--sidebar-bg); border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; color: var(--text-mid); flex-shrink: 0;
+    }
+    .user-greeting-line { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+    .user-name-line { font-size: 14px; font-weight: 800; color: var(--text-dark); letter-spacing: -0.01em; line-height: 1.3; }
+    .side-nav { display: flex; flex-direction: column; gap: 1px; margin-top: 2px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 11px; padding: 8px 12px;
+      border-radius: 10px; font-size: 13px; font-weight: 600;
+      color: var(--text-mid); text-decoration: none; transition: var(--transition-plain);
+    }
+    .nav-item:hover  { background: rgba(255,255,255,0.55); color: var(--text-dark); }
+    .nav-item.active { background: var(--text-dark); color: white; font-weight: 700; }
+    .nav-item svg { flex-shrink: 0; }
+    .promo-card {
+      background: linear-gradient(135deg, #fad6c0, #f4b8a3);
+      border-radius: var(--r-md); padding: 16px 16px 14px; margin-top: auto;
+      position: relative; overflow: hidden; text-decoration: none; color: var(--text-dark); display: block;
+    }
+    .promo-card::before {
+      content: ''; position: absolute; right: -20px; bottom: -20px;
+      width: 100px; height: 100px;
+      background-image: radial-gradient(circle, rgba(255,255,255,0.35) 1.2px, transparent 1.2px);
+      background-size: 12px 12px; border-radius: 50%; pointer-events: none;
+    }
+    .promo-label { font-size: 10px; font-weight: 800; color: rgba(40,30,20,0.55); letter-spacing: 0.08em; text-transform: uppercase; }
+    .promo-rank  { font-size: 15px; font-weight: 900; color: var(--text-dark); margin-top: 4px; letter-spacing: -0.02em; position: relative; z-index: 1; }
+    .promo-cta   { margin-top: 10px; font-size: 11px; font-weight: 700; color: var(--text-dark); position: relative; z-index: 1; }
+    .promo-progress-track { height: 6px; background: rgba(255,255,255,0.45); border-radius: 99px; overflow: hidden; margin-top: 10px; position: relative; z-index: 1; }
+    .promo-progress-fill  { height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.6s ease; width: 0%; }
+    .promo-progress-next  { font-size: 10px; font-weight: 700; color: rgba(40,30,20,0.6); margin-top: 5px; position: relative; z-index: 1; }
+
+    /* ── 메인 영역 ── */
+    .trans-main {
+      flex: 1; display: flex; flex-direction: column;
+      padding: 14px; overflow: hidden; min-width: 0;
+    }
+
+    /* ── 메인 그리드 ── */
+    .main-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 14px;
+      min-height: 0;
+    }
+
+    /* ── 카메라 패널 ── */
+    .camera-panel {
+      background: var(--card-cream); border-radius: var(--r-xl);
+      box-shadow: var(--shadow-card); overflow: hidden;
+      display: flex; flex-direction: column; min-height: 0;
+    }
+
+    .camera-wrapper {
+      flex: 1; position: relative; background: #020617;
+      overflow: hidden; min-height: 0;
+    }
+
+    #videoEl {
+      width: 100%; height: 100%; object-fit: cover;
+      transform: scaleX(-1); /* 거울 모드 */
+    }
+    #canvasEl {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      transform: scaleX(-1);
+    }
+
+    .camera-overlay {
+      position: absolute; inset: 0; display: flex;
+      align-items: center; justify-content: center;
+      flex-direction: column; gap: 12px; background: rgba(2,6,23,0.85);
+    }
+    .camera-overlay.hidden { display: none; }
+    .camera-overlay .ov-icon { font-size: 48px; }
+    .camera-overlay p { color: #94a3b8; font-size: 14px; }
+
+    /* 인식 상태 배지 */
+    .status-badge {
+      position: absolute; top: 14px; left: 14px;
+      background: rgba(15,23,42,0.75); backdrop-filter: blur(6px);
+      color: white; border-radius: 100px; padding: 6px 14px;
+      font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 6px;
+    }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #64748b; transition: background 0.3s; }
+    .status-dot.active  { background: #22c55e; animation: pulse 1.5s infinite; }
+    .status-dot.loading { background: #f59e0b; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    /* 프레임 게이지 */
+    .frame-gauge {
+      position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
+      width: calc(100% - 28px); background: rgba(15,23,42,0.6);
+      border-radius: 100px; height: 5px; overflow: hidden;
+    }
+    .frame-gauge-fill {
+      height: 100%; background: var(--accent);
+      border-radius: 100px; width: 0%; transition: width 0.1s;
+    }
+
+    /* 카메라 컨트롤 */
+    .camera-controls {
+      padding: 14px 16px; display: flex; gap: 10px;
+      border-top: 1px solid var(--border); background: var(--card-cream); flex-shrink: 0;
+    }
+    .ctrl-btn {
+      flex: 1; padding: 11px; border: none; border-radius: var(--r-md);
+      font-size: 13px; font-weight: 700; cursor: pointer;
+      transition: var(--transition); font-family: inherit;
+    }
+    .ctrl-btn.primary {
+      background: var(--accent); color: white;
+      box-shadow: 0 4px 12px rgba(106,92,214,0.3);
+    }
+    .ctrl-btn.primary:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(106,92,214,0.4); }
+    .ctrl-btn.secondary { background: var(--border); color: var(--text-mid); }
+    .ctrl-btn.secondary:hover { background: #d4d1e8; }
+    .ctrl-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; }
+
+    /* ── 결과 패널 ── */
+    .result-panel {
+      display: flex; flex-direction: column; gap: 14px;
+      overflow: hidden; min-height: 0;
+    }
+
+    .result-card {
+      background: white; border: 1px solid var(--border);
+      border-radius: var(--r-lg); box-shadow: var(--shadow-card);
+      padding: 20px; flex-shrink: 0;
+    }
+    .result-card.grow { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+
+    .card-label {
+      font-size: 11px; font-weight: 800; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px;
+    }
+
+    /* 현재 인식 결과 */
+    .current-result { text-align: center; padding: 8px 0; }
+    .result-word {
+      font-size: 42px; font-weight: 900; color: var(--text-dark);
+      letter-spacing: -0.03em; min-height: 56px;
+      display: flex; align-items: center; justify-content: center; transition: all 0.3s;
+    }
+    .result-word.empty { color: var(--border); font-size: 28px; font-weight: 400; }
+
+    .confidence-bar-wrap { margin-top: 14px; }
+    .confidence-label {
+      display: flex; justify-content: space-between;
+      font-size: 12px; color: var(--text-muted); margin-bottom: 6px;
+    }
+    .confidence-bar { height: 6px; background: var(--border); border-radius: 100px; overflow: hidden; }
+    .confidence-fill {
+      height: 100%; background: linear-gradient(90deg, var(--accent), #22c55e);
+      border-radius: 100px; width: 0%; transition: width 0.4s ease;
+    }
+
+    /* 번역 누적 텍스트 */
+    .translation-box {
+      flex: 1; min-height: 80px; background: var(--card-cream);
+      border-radius: var(--r-md); padding: 14px 16px;
+      font-size: 16px; font-weight: 600; color: var(--text-dark);
+      line-height: 1.8; word-break: keep-all; overflow-y: auto;
+    }
+    .translation-box.empty {
+      color: var(--border); font-weight: 400; font-size: 14px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .trans-actions { display: flex; gap: 8px; margin-top: 10px; flex-shrink: 0; }
+    .trans-btn {
+      flex: 1; padding: 9px; border: 1.5px solid var(--border);
+      border-radius: var(--r-sm); background: white;
+      font-size: 12px; font-weight: 700; color: var(--text-muted);
+      cursor: pointer; transition: var(--transition); font-family: inherit;
+    }
+    .trans-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* 최근 인식 히스토리 */
+    .history-list {
+      display: flex; flex-direction: column; gap: 8px;
+      max-height: 220px; overflow-y: auto;
+    }
+    .history-list::-webkit-scrollbar { width: 4px; }
+    .history-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+    .history-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 14px; background: var(--card-cream);
+      border-radius: var(--r-sm); font-size: 13px; animation: slideIn 0.2s ease;
+    }
+    @keyframes slideIn { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
+    .history-word { font-weight: 700; color: var(--text-dark); }
+    .history-conf { font-size: 11px; color: var(--text-muted); }
+    .history-empty { color: var(--border); font-size: 13px; text-align: center; padding: 12px; }
+
+    /* 연결 상태 */
+    .ws-status { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-muted); }
+    .ws-dot { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; transition: background 0.3s; }
+    .ws-dot.connected  { background: #22c55e; }
+    .ws-dot.connecting { background: #f59e0b; }
+
+    @media (max-width: 760px) { .main-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <!-- ═══ 좌측 사이드바 ═══ -->
+  <aside class="sidebar">
+    <div class="brand-block">
+      <div class="brand-mark">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+      </div>
+      <div>
+        <div class="brand-name">SORI</div>
+        <div class="brand-sub">AI 수어 학습</div>
+      </div>
+    </div>
+    <div class="user-block">
+      <div class="user-avatar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <div>
+        <div class="user-greeting-line">반가워요</div>
+        <div class="user-name-line"><span id="userName">친구</span>님</div>
+      </div>
+    </div>
+    <nav class="side-nav">
+      <a class="nav-item" href="sign_language_homepage.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        홈
+      </a>
+      <a class="nav-item" href="education.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        교육
+      </a>
+      <a class="nav-item" href="quiz.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        퀴즈
+      </a>
+      <a class="nav-item" href="dictionary.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        사전
+      </a>
+      <a class="nav-item" href="chatbot.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        챗봇
+      </a>
+      <a class="nav-item active" href="translation.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        수어 인식
+      </a>
+      <a class="nav-item" href="badges.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+        뱃지
+      </a>
+    </nav>
+    <a class="promo-card" href="badges.html">
+      <div class="promo-label">현재 등급</div>
+      <div class="promo-rank" id="userRankChip">🌱 수어 입문자</div>
+      <div class="promo-progress-track">
+        <div class="promo-progress-fill" id="promoProgressFill"></div>
+      </div>
+      <div class="promo-progress-next" id="promoProgressNext">다음 등급까지 100% 남았어요</div>
+      <div class="promo-cta">자세히 보기 →</div>
+    </a>
+  </aside>
+
+  <!-- ═══ 메인 영역 ═══ -->
+  <main class="trans-main">
+    <div class="main-grid">
+
+      <!-- ── 카메라 패널 ── -->
+      <div class="camera-panel">
+        <div class="camera-wrapper">
+          <video id="videoEl" autoplay playsinline muted></video>
+          <canvas id="canvasEl"></canvas>
+
+          <!-- 시작 전 오버레이 -->
+          <div class="camera-overlay" id="cameraOverlay">
+            <div class="ov-icon">📷</div>
+            <p>카메라 시작 버튼을 눌러주세요</p>
+          </div>
+
+          <!-- 인식 상태 배지 -->
+          <div class="status-badge">
+            <div class="status-dot" id="statusDot"></div>
+            <span id="statusTxt">대기 중</span>
+          </div>
+
+          <!-- 프레임 수집 게이지 -->
+          <div class="frame-gauge">
+            <div class="frame-gauge-fill" id="gaugeEl"></div>
+          </div>
+        </div>
+
+        <div class="camera-controls">
+          <button class="ctrl-btn primary" id="startBtn" onclick="startCamera()">▶ 카메라 시작</button>
+          <button class="ctrl-btn secondary" id="stopBtn" onclick="stopCamera()" disabled>■ 중지</button>
+        </div>
+      </div>
+
+      <!-- ── 결과 패널 ── -->
+      <div class="result-panel">
+
+        <!-- 현재 인식 결과 -->
+        <div class="result-card">
+          <div class="card-label">현재 인식 결과</div>
+          <div class="current-result">
+            <div class="result-word empty" id="resultWord">수어를 보여주세요</div>
+            <div class="confidence-bar-wrap">
+              <div class="confidence-label">
+                <span>정확도</span>
+                <span id="confPct">—</span>
+              </div>
+              <div class="confidence-bar">
+                <div class="confidence-fill" id="confFill"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 누적 인식 결과 -->
+        <div class="result-card grow">
+          <div class="card-label">인식 텍스트</div>
+          <div class="translation-box empty" id="transBox">
+            인식된 수어가 여기에 쌓입니다
+          </div>
+          <div class="trans-actions">
+            <button class="trans-btn" onclick="copyTranslation()">📋 복사</button>
+            <button class="trans-btn" onclick="clearTranslation()">🗑 지우기</button>
+          </div>
+        </div>
+
+        <!-- 최근 히스토리 -->
+        <div class="result-card">
+          <div class="card-label" style="display:flex;justify-content:space-between;align-items:center">
+            <span>최근 인식 기록</span>
+            <div class="ws-status">
+              <div class="ws-dot" id="wsDot"></div>
+              <span id="wsTxt">서버 미연결</span>
+            </div>
+          </div>
+          <div class="history-list" id="historyList">
+            <div class="history-empty">인식 기록이 없습니다</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+  <!-- 사이드바 위젯 -->
+  <script>
+    const RANKS = [
+      { emoji: '🌱', name: '수어 입문자', minTotal: 0,  minAcc: 0   },
+      { emoji: '🥉', name: '수어 도전자', minTotal: 5,  minAcc: 40  },
+      { emoji: '🥈', name: '수어 학습자', minTotal: 10, minAcc: 60  },
+      { emoji: '🥇', name: '수어 마스터', minTotal: 15, minAcc: 80  },
+      { emoji: '💎', name: '수어 챔피언', minTotal: 20, minAcc: 95  },
+      { emoji: '👑', name: '수어 천재',   minTotal: 20, minAcc: 100 },
+    ];
+    function _getUserRank() {
+      const qs = JSON.parse(localStorage.getItem('quiz_stats') || '{"correct":0,"total":0}');
+      const total = qs.total || 0;
+      const accuracy = total > 0 ? Math.round(qs.correct / qs.total * 100) : 0;
+      if (total >= 20 && accuracy === 100) return { emoji: '👑', name: '수어 천재' };
+      if (total >= 20 && accuracy >= 95)  return { emoji: '💎', name: '수어 챔피언' };
+      if (total >= 15 && accuracy >= 80)  return { emoji: '🥇', name: '수어 마스터' };
+      if (total >= 10 && accuracy >= 60)  return { emoji: '🥈', name: '수어 학습자' };
+      if (total >= 5  && accuracy >= 40)  return { emoji: '🥉', name: '수어 도전자' };
+      return { emoji: '🌱', name: '수어 입문자' };
+    }
+    function _updateRankChip() {
+      const chip = document.getElementById('userRankChip');
+      if (!chip) return;
+      const rank = _getUserRank();
+      chip.textContent = `${rank.emoji} ${rank.name}`;
+      _updateRankBanner();
+    }
+    function _updateRankBanner() {
+      const qs = JSON.parse(localStorage.getItem('quiz_stats') || '{"correct":0,"total":0}');
+      const total = qs.total || 0;
+      const accuracy = total > 0 ? Math.round(qs.correct / qs.total * 100) : 0;
+      let rankIdx = 0;
+      for (let i = RANKS.length - 1; i >= 0; i--) {
+        if (total >= RANKS[i].minTotal && accuracy >= RANKS[i].minAcc) { rankIdx = i; break; }
+      }
+      const next = RANKS[rankIdx + 1];
+      const fillEl = document.getElementById('promoProgressFill');
+      const textEl = document.getElementById('promoProgressNext');
+      if (!fillEl) return;
+      if (!next) {
+        fillEl.style.width = '100%';
+        if (textEl) textEl.textContent = '🏆 모든 등급 달성!';
+        return;
+      }
+      const totalPct = next.minTotal > 0 ? Math.min(100, Math.round(total / next.minTotal * 100)) : 100;
+      const accPct   = next.minAcc   > 0 ? Math.min(100, Math.round(accuracy / next.minAcc * 100)) : 100;
+      fillEl.style.width = Math.min(totalPct, accPct) + '%';
+      if (textEl) textEl.textContent = `다음 등급까지 ${100 - Math.min(totalPct, accPct)}% 남았어요`;
+    }
+    (function initSidebar() {
+      const nameEl = document.getElementById('userName');
+      if (nameEl) nameEl.textContent = localStorage.getItem('user_name') || '친구';
+      _updateRankChip();
+    })();
+  </script>
+
+  <!-- MediaPipe Holistic -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/holistic/holistic.js" crossorigin="anonymous"></script>
+
+  <script>
+    // ── 상태 변수 ─────────────────────────────────
+    const API_BASE_URL = "https://antler-bulldog-puppet.ngrok-free.dev";
+    const WS_URL = API_BASE_URL.replace(/^https/, "wss").replace(/^http/, "ws") + "/ws/predict";
+    const SEQ_LEN   = 30;
+
+    // MediaPipe FaceMesh 468개 중 NIA 데이터셋 OpenPose 70개 얼굴 랜드마크에 대응하는 인덱스
+    // (dlib 68-point + 동공 2개 = 70개)
+    const FACE_INDICES_70 = [
+      // Jawline (17)
+      234, 93, 132, 58, 172, 136, 150, 149, 175, 148, 152, 377, 400, 378, 379, 365, 288,
+      // Left eyebrow (5)
+      70, 63, 105, 66, 107,
+      // Right eyebrow (5)
+      336, 296, 334, 293, 300,
+      // Nose bridge (4)
+      168, 6, 197, 195,
+      // Nose tip (5)
+      4, 5, 97, 2, 326,
+      // Left eye (6)
+      33, 160, 158, 133, 153, 144,
+      // Right eye (6)
+      362, 385, 387, 263, 373, 380,
+      // Outer lip (12)
+      61, 40, 37, 0, 267, 270, 291, 321, 314, 17, 84, 181,
+      // Inner lip (8)
+      78, 82, 87, 13, 317, 311, 308, 402,
+      // Pupils (2)
+      159, 386,
+    ]; // 총 17+5+5+4+5+6+6+12+8+2 = 70
+
+    let ws          = null;
+    let stream      = null;
+    let holistic    = null;
+    let camera      = null;
+    let isRunning   = false;
+    let translations = [];
+
+    // ── DOM 요소 ──────────────────────────────────
+    const videoEl     = document.getElementById("videoEl");
+    const canvasEl    = document.getElementById("canvasEl");
+    const ctx         = canvasEl.getContext("2d");
+    const statusDot   = document.getElementById("statusDot");
+    const statusTxt   = document.getElementById("statusTxt");
+    const gaugeEl     = document.getElementById("gaugeEl");
+    const resultWord  = document.getElementById("resultWord");
+    const confPct     = document.getElementById("confPct");
+    const confFill    = document.getElementById("confFill");
+    const transBox    = document.getElementById("transBox");
+    const historyList = document.getElementById("historyList");
+    const wsDot       = document.getElementById("wsDot");
+    const wsTxt       = document.getElementById("wsTxt");
+
+    // ── WebSocket 연결 ────────────────────────────
+    const WS_MAX_RETRIES = 5;
+    let wsRetryCount = 0;
+    let wsRetryTimer = null;
+    let wsIntentionalClose = false; // 카메라 중지 등 의도적 종료 플래그
+
+    function connectWS() {
+      if (wsRetryTimer) { clearTimeout(wsRetryTimer); wsRetryTimer = null; }
+      wsIntentionalClose = false;
+
+      const isNgrok = WS_URL.includes('ngrok');
+      ws = isNgrok ? new WebSocket(WS_URL, ['ngrok-skip-browser-warning']) : new WebSocket(WS_URL);
+      wsDot.className = "ws-dot connecting";
+      wsTxt.textContent = wsRetryCount > 0 ? `재연결 중... (${wsRetryCount}/${WS_MAX_RETRIES})` : "연결 중...";
+
+      ws.onopen = () => {
+        wsRetryCount = 0;
+        wsDot.className = "ws-dot connected";
+        wsTxt.textContent = "서버 연결됨";
+        const retryBtn = document.getElementById("wsRetryBtn");
+        if (retryBtn) retryBtn.remove();
+      };
+
+      ws.onmessage = (e) => {
+        const data = JSON.parse(e.data);
+
+        if (data.error) {
+          console.warn("서버 오류:", data.error);
+          return;
+        }
+
+        // 프레임 수집 중
+        if (data.status === "collecting") {
+          const pct = (data.frames / data.total * 100).toFixed(0);
+          gaugeEl.style.width = pct + "%";
+          setStatus("수집 중", "loading");
+          return;
+        }
+
+        // 예측 결과 (팀원 서버: { word, confidence, top3 } / 자체 서버: { label, confidence })
+        const resultWord = data.word ?? data.label;
+        if (resultWord !== undefined) {
+          gaugeEl.style.width = "100%";
+          setTimeout(() => gaugeEl.style.width = "0%", 300);
+
+          if (resultWord === "인식 불가") {
+            setStatus("인식 불가 (신뢰도 낮음)", "loading");
+            return;
+          }
+
+          showResult(resultWord, data.confidence);
+          addHistory(resultWord, data.confidence);
+          appendTranslation(resultWord);
+          setStatus("인식 중", "active");
+        }
+      };
+
+      ws.onclose = (e) => {
+        wsDot.className = "ws-dot";
+        console.warn(`[WS 종료] code: ${e.code}, reason: "${e.reason}", wasClean: ${e.wasClean}`);
+        // 의도적 종료(카메라 중지)이면 재연결 시도 안 함
+        if (wsIntentionalClose) {
+          wsTxt.textContent = "서버 미연결";
+          return;
+        }
+        if (wsRetryCount < WS_MAX_RETRIES) {
+          wsRetryCount++;
+          const delay = Math.min(3000 * wsRetryCount, 20000); // 3s → 6s → 9s ... 최대 20s
+          wsTxt.textContent = `서버 미연결 — ${delay / 1000}초 후 재시도 (${wsRetryCount}/${WS_MAX_RETRIES})`;
+          wsRetryTimer = setTimeout(connectWS, delay);
+        } else {
+          wsTxt.textContent = "서버 미연결";
+          showRetryButton();
+        }
+      };
+
+      ws.onerror = () => {
+        wsDot.className = "ws-dot";
+        wsTxt.textContent = "연결 오류";
+      };
+    }
+
+    function showRetryButton() {
+      if (document.getElementById("wsRetryBtn")) return;
+      const btn = document.createElement("button");
+      btn.id = "wsRetryBtn";
+      btn.textContent = "🔄 다시 연결";
+      btn.style.cssText = "margin-left:10px;padding:3px 10px;border-radius:8px;border:1px solid #3b82f6;background:transparent;color:#3b82f6;font-size:12px;cursor:pointer;font-family:inherit;";
+      btn.onclick = () => { wsRetryCount = 0; btn.remove(); connectWS(); };
+      wsTxt.parentElement.appendChild(btn);
+    }
+
+    // ── MediaPipe Holistic 초기화 ─────────────────
+    function initMediaPipe() {
+      holistic = new Holistic({
+        locateFile: (file) =>
+          `https://cdn.jsdelivr.net/npm/@mediapipe/holistic/${file}`
+      });
+
+      holistic.setOptions({
+        modelComplexity:        1,
+        smoothLandmarks:        true,
+        enableSegmentation:     false,
+        smoothSegmentation:     false,
+        refineFaceLandmarks:    false,
+        minDetectionConfidence: 0.5,
+        minTrackingConfidence:  0.5,
+      });
+
+      holistic.onResults(onHolisticResults);
+    }
+
+    // 픽셀 좌표로 변환 (모델이 픽셀 좌표로 학습됨)
+    function toPixel(lm, w, h) { return [lm.x * w, lm.y * h]; }
+
+    // ── 양손 펼치기 감지 (인식 트리거용) ──────────
+    function isOpenPalm(landmarks) {
+      if (!landmarks) return false;
+      return (
+        landmarks[8].y  < landmarks[6].y  &&   // 검지
+        landmarks[12].y < landmarks[10].y &&   // 중지
+        landmarks[16].y < landmarks[14].y &&   // 약지
+        landmarks[20].y < landmarks[18].y      // 소지
+      );
+    }
+
+    // 트리거 상태 (SEQ_LEN=30은 상단에 선언됨)
+    const TRIGGER_FRAMES  = 30;  // 양손 펼치기 1초 유지 → 인식 시작
+    const NO_HAND_TIMEOUT = 90;  // 손 없음 3초(30fps×3) → 인식 종료
+    let frameBuffer   = [];
+    let isRecording   = false;
+    let openPalmCount = 0;
+    let noHandCount   = 0;
+
+    // ── Holistic 인식 결과 처리 ───────────────────
+    function onHolisticResults(results) {
+      const w = videoEl.videoWidth  || 640;
+      const h = videoEl.videoHeight || 480;
+
+      canvasEl.width  = w;
+      canvasEl.height = h;
+      ctx.clearRect(0, 0, w, h);
+
+      // ── 시각화 ──
+      if (results.poseLandmarks) {
+        drawConnectors(ctx, results.poseLandmarks, POSE_CONNECTIONS,
+          { color: "rgba(255,200,0,0.4)", lineWidth: 2 });
+      }
+      if (results.faceLandmarks) {
+        drawConnectors(ctx, results.faceLandmarks, FACEMESH_TESSELATION,
+          { color: "rgba(180,180,180,0.15)", lineWidth: 1 });
+      }
+      if (results.leftHandLandmarks) {
+        drawConnectors(ctx, results.leftHandLandmarks, HAND_CONNECTIONS,
+          { color: "rgba(59,130,246,0.6)", lineWidth: 2 });
+        drawLandmarks(ctx, results.leftHandLandmarks,
+          { color: "#3b82f6", fillColor: "#6366f1", lineWidth: 1, radius: 4 });
+      }
+      if (results.rightHandLandmarks) {
+        drawConnectors(ctx, results.rightHandLandmarks, HAND_CONNECTIONS,
+          { color: "rgba(16,185,129,0.6)", lineWidth: 2 });
+        drawLandmarks(ctx, results.rightHandLandmarks,
+          { color: "#10b981", fillColor: "#34d399", lineWidth: 1, radius: 4 });
+      }
+
+      // ── 녹화 중: 연속 인식, 손 없음 3초 시 종료 ──
+      if (isRecording) {
+        const hasHand = results.leftHandLandmarks || results.rightHandLandmarks;
+
+        if (!hasHand) {
+          noHandCount++;
+          const secLeft = Math.ceil((NO_HAND_TIMEOUT - noHandCount) / 30);
+          if (noHandCount >= NO_HAND_TIMEOUT) {
+            isRecording = false;
+            frameBuffer = [];
+            noHandCount = 0;
+            setStatus("양손을 펼쳐 인식을 시작하세요", "");
+            return;
+          }
+          setStatus(`⚠️ 손이 감지되지 않습니다 — ${secLeft}초 후 종료`, "");
+        } else {
+          noHandCount = 0;
+        }
+
+        const fw = 1920;
+        const fh = 1080;
+
+        const ZERO21 = Array(42).fill(0);
+        const ZERO70 = Array(140).fill(0);
+        const ZERO25 = Array(50).fill(0);
+
+        const leftKp  = results.leftHandLandmarks
+          ? results.leftHandLandmarks.flatMap(lm => toPixel(lm, fw, fh))
+          : ZERO21;
+        const rightKp = results.rightHandLandmarks
+          ? results.rightHandLandmarks.flatMap(lm => toPixel(lm, fw, fh))
+          : ZERO21;
+        const faceKp  = results.faceLandmarks
+          ? FACE_INDICES_70.flatMap(idx => toPixel(results.faceLandmarks[idx], fw, fh))
+          : ZERO70;
+        const poseKp  = results.poseLandmarks
+          ? results.poseLandmarks.slice(0, 25).flatMap(lm => toPixel(lm, fw, fh))
+          : ZERO25;
+
+        frameBuffer.push([...leftKp, ...rightKp, ...faceKp, ...poseKp]);
+        if (noHandCount === 0) {
+          setStatus(`🟢 수어를 동작하세요 (${frameBuffer.length}/${SEQ_LEN})`, "active");
+        }
+
+        if (frameBuffer.length === SEQ_LEN) {
+          if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ keypoints: frameBuffer }));  // shape: (30, 274)
+          }
+          frameBuffer = [];
+          // isRecording 유지 → 자동으로 다음 시퀀스 수집 시작
+        }
+        return;
+      }
+
+      // ── 트리거 대기: 양손 펼치기 1초 유지 ──
+      const hasHand = results.leftHandLandmarks || results.rightHandLandmarks;
+      if (!hasHand) {
+        setStatus("손을 보여주세요", "");
+        openPalmCount = 0;
+        return;
+      }
+
+      const bothOpen =
+        isOpenPalm(results.leftHandLandmarks) &&
+        isOpenPalm(results.rightHandLandmarks);
+
+      if (bothOpen) {
+        openPalmCount++;
+        const remain = Math.ceil((TRIGGER_FRAMES - openPalmCount) / 30 * 10) / 10;
+        setStatus(`✋ 양손을 유지하세요 (${remain}초)`, "");
+        if (openPalmCount >= TRIGGER_FRAMES) {
+          isRecording   = true;
+          frameBuffer   = [];
+          openPalmCount = 0;
+        }
+      } else {
+        openPalmCount = 0;
+        setStatus("양손을 펼쳐 인식을 시작하세요", "");
+      }
+    }
+
+    // ── 카메라 시작/중지 ──────────────────────────
+    async function startCamera() {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { width: 640, height: 480, facingMode: "user" }
+        });
+        videoEl.srcObject = stream;
+
+        document.getElementById("cameraOverlay").classList.add("hidden");
+        document.getElementById("startBtn").disabled = true;
+        document.getElementById("stopBtn").disabled  = false;
+
+        isRunning = true;
+        setStatus("초기화 중...", "loading");
+
+        initMediaPipe();
+        connectWS();
+
+        camera = new Camera(videoEl, {
+          onFrame: async () => {
+            if (holistic) await holistic.send({ image: videoEl });
+          },
+          width: 640,
+          height: 480,
+        });
+        camera.start();
+        setStatus("인식 중", "active");
+
+      } catch (err) {
+        alert("카메라 접근 오류: " + err.message);
+      }
+    }
+
+    function stopCamera() {
+      if (stream) stream.getTracks().forEach(t => t.stop());
+      if (camera) camera.stop();
+      if (wsRetryTimer) { clearTimeout(wsRetryTimer); wsRetryTimer = null; }
+      wsIntentionalClose = true;
+      wsRetryCount = 0;
+      if (ws) ws.close();
+
+      isRunning = false;
+      stream = camera = ws = null;
+
+      document.getElementById("cameraOverlay").classList.remove("hidden");
+      document.getElementById("startBtn").disabled = false;
+      document.getElementById("stopBtn").disabled  = true;
+
+      setStatus("대기 중", "");
+      gaugeEl.style.width = "0%";
+    }
+
+    // ── UI 헬퍼 ──────────────────────────────────
+    function setStatus(text, dotClass) {
+      statusTxt.textContent  = text;
+      statusDot.className    = "status-dot " + dotClass;
+    }
+
+    function showResult(label, confidence) {
+      resultWord.textContent = label;
+      resultWord.classList.remove("empty");
+
+      const pct = Math.round(confidence * 100);
+      confPct.textContent      = pct + "%";
+      confFill.style.width     = pct + "%";
+    }
+
+    function addHistory(label, confidence) {
+      const empty = historyList.querySelector(".history-empty");
+      if (empty) empty.remove();
+
+      const item = document.createElement("div");
+      item.className = "history-item";
+      item.innerHTML = `
+        <span class="history-word">${label}</span>
+        <span class="history-conf">${Math.round(confidence * 100)}%</span>`;
+      historyList.insertBefore(item, historyList.firstChild);
+
+      // 최대 10개
+      while (historyList.children.length > 10) {
+        historyList.removeChild(historyList.lastChild);
+      }
+    }
+
+    let lastLabel = "";
+    function appendTranslation(label) {
+      if (label === lastLabel) return; // 같은 단어 연속 중복 방지
+      lastLabel = label;
+      translations.push(label);
+
+      transBox.classList.remove("empty");
+      transBox.textContent = translations.join(" ");
+    }
+
+    function copyTranslation() {
+      const text = transBox.textContent;
+      if (!text || transBox.classList.contains("empty")) return;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = event.target;
+        btn.textContent = "✅ 복사됨";
+        setTimeout(() => btn.textContent = "📋 복사", 1500);
+      });
+    }
+
+    function clearTranslation() {
+      translations = [];
+      lastLabel    = "";
+      transBox.className  = "translation-box empty";
+      transBox.textContent = "인식된 수어가 여기에 쌓입니다";
+    }
+  </script>
+  <script src="chatbot-overlay.js"></script>
+</body>
+</html>
