@@ -1,5 +1,7 @@
 # SORI — AI 한국 수어 학습 플랫폼
 
+라이브 데모:: https://graduationproject-aihandsign.github.io/AIHandSign/
+
 웹캠으로 한국 수어 단어 3,000개를 실시간으로 인식하고, 학습·퀴즈·오답 복습·3D 아바타 시연·챗봇 코칭을 제공하는 웹 기반 수어 학습 플랫폼입니다. (충북대학교 졸업작품, 3인 팀)
 
 | 항목 | 내용 |
